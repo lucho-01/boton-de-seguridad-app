@@ -1,0 +1,38 @@
+{
+  "name": "boton-de-seguridad-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "App móvil del proyecto 36 · Botón de seguridad con contactos de confianza",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.13",
+    "@babel/plugin-transform-modules-commonjs": "^7.29.14",
+    "@babel/preset-typescript": "^7.29.7",
+    "@eslint/js": "^9.39.5",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.20.5",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "jest": "^30.5.2",
+    "prettier": "^3.6.2",
+    "typescript": "^5",
+    "typescript-eslint": "^8.46.0"
+  },
+  "engines": {
+    "node": "24.x"
+  }
+}
