@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Botón de seguridad",
+    "slug": "boton-de-seguridad",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "botonseguridad",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.proyecto36.botonseguridad"
+    },
+    "android": {
+      "package": "com.proyecto36.botonseguridad"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "La app usa tu ubicación solo cuando preparas una alerta, para incluir un enlace de mapa en el mensaje a tus contactos."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
