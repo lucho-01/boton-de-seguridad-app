@@ -20,7 +20,11 @@
       "*service-account*.json": "deny",
       "secrets/**": "deny",
       "data/**": "deny",
-      "../*": "deny"
+      "../*/**": "deny",
+      "../boton-de-seguridad-api/.env*": "deny",
+      "../boton-de-seguridad-api/secrets/**": "deny",
+      "../boton-de-seguridad-api/data/**": "deny",
+      "../boton-de-seguridad-api/**": "allow"
     },
     "edit": {
       "*": "allow",
@@ -33,12 +37,16 @@
       "*.p12": "deny",
       "secrets/**": "deny",
       "data/**": "deny",
-      "../*": "deny",
       "opencode.json": "ask",
       "AGENTS.md": "ask",
       ".opencode/**": "ask",
       "app.json": "ask",
-      "eas.json": "ask"
+      "eas.json": "ask",
+      "../*/**": "deny",
+      "../boton-de-seguridad-api/.env*": "deny",
+      "../boton-de-seguridad-api/secrets/**": "deny",
+      "../boton-de-seguridad-api/data/**": "deny",
+      "../boton-de-seguridad-api/**": "allow"
     },
     "bash": {
       "*": "ask",
@@ -59,7 +67,7 @@
       "grep * .env*": "deny",
       "printenv*": "deny",
       "env": "deny",
-      "cd ..*": "deny",
+      "cd ..": "deny",
       "git push*": "deny",
       "eas build*": "deny",
       "eas submit*": "deny",

@@ -114,10 +114,27 @@ function relativeToRoot(p: string, root: string): { rel: string; outside: boolea
   return { rel: normalized, outside };
 }
 
+/** Repo hermano autorizado por la persona el 2026-11-14 para construir la API (A0). */
+export const REPO_HERMANO = "boton-de-seguridad-api";
+
+/** ¿La ruta cae dentro del repo hermano autorizado? (se compara la ruta ya resuelta) */
+export function enRepoHermano(p: string, root: string): boolean {
+  const hermano = resolve(realpathOrSelf(root), "..", REPO_HERMANO);
+  const abs = resolve(root, p);
+  const rel = relative(hermano, abs);
+  if (rel === "") {
+    return true;
+  }
+  return !rel.startsWith("..") && !isAbsolute(rel);
+}
+
 /** ¿La ruta está fuera de la carpeta del proyecto? */
 export function isOutsideRoot(p: string, root: string): boolean {
   if (p === "~" || p.startsWith("~/") || p.startsWith("~\\")) {
     return true;
+  }
+  if (enRepoHermano(p, root)) {
+    return false;
   }
   const info = relativeToRoot(p, root);
   if (info === null) {
@@ -126,19 +143,24 @@ export function isOutsideRoot(p: string, root: string): boolean {
   return info.outside;
 }
 
-/** ¿La ruta cae en una zona prohibida? */
+/** ¿La ruta cae en una zona prohibida? (también dentro del repo hermano autorizado) */
 export function isForbiddenPath(p: string, root: string): boolean {
+  const hermano = enRepoHermano(p, root);
   const info = relativeToRoot(p, root);
-  if (info === null || info.outside) {
+  if (info === null) {
     return false;
   }
-  const segments = info.rel.split("/");
+  if (info.outside && !hermano) {
+    return false;
+  }
+  const rel = relDelRepo(p, root, info.rel, info.outside, hermano);
+  const segments = rel.split("/");
   const base = segments[segments.length - 1] ?? "";
   if ((ALLOWED_EXCEPTIONS as readonly string[]).includes(base)) {
     return false;
   }
   const inForbiddenDir = FORBIDDEN_DIRS.some(
-    (dir) => info.rel === dir.slice(0, -1) || info.rel.startsWith(dir),
+    (dir) => rel === dir.slice(0, -1) || rel.startsWith(dir),
   );
   if (inForbiddenDir) {
     return true;
