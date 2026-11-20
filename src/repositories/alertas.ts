@@ -14,7 +14,14 @@ export interface AlertasRepository {
   marcarBorrado(id: string, ahora: Date): Promise<void>;
 }
 
-export class AlertasRepositorySqlite implements AlertasRepository {
+export interface AlertasSyncRepository extends AlertasRepository {
+  listarPendientes(): Promise<Alerta[]>;
+  guardarDesdeApi(alerta: Alerta): Promise<void>;
+  confirmarSubida(alerta: Alerta, updatedAtLocal: string): Promise<void>;
+  marcarSincronizado(id: string, updatedAtLocal: string): Promise<void>;
+}
+
+export class AlertasRepositorySqlite implements AlertasSyncRepository {
   private readonly basePromise: Promise<BaseRepositorio> | null;
 
   constructor(basePromise?: Promise<BaseRepositorio>) {
@@ -31,6 +38,17 @@ export class AlertasRepositorySqlite implements AlertasRepository {
        ORDER BY creada_en DESC`,
     );
     return filas;
+  }
+
+  async listarPendientes(): Promise<Alerta[]> {
+    const base = await this.obtenerBase();
+    return base.getAllAsync<Alerta>(
+      `SELECT id, remote_id, created_at, updated_at, deleted_at, pending, deleted,
+              lat, lng, precision_m, bateria_pct, estado, creada_en
+       FROM alerta
+       WHERE pending = 1
+       ORDER BY updated_at, id`,
+    );
   }
 
   async obtenerPorId(id: string): Promise<Alerta | null> {
@@ -73,6 +91,68 @@ export class AlertasRepositorySqlite implements AlertasRepository {
     );
   }
 
+  async guardarDesdeApi(alerta: Alerta): Promise<void> {
+    const base = await this.obtenerBase();
+    await base.runAsync(
+      `INSERT INTO alerta
+        (id, remote_id, created_at, updated_at, deleted_at, pending, deleted,
+         lat, lng, precision_m, bateria_pct, estado, creada_en)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET
+         remote_id = excluded.remote_id,
+         created_at = excluded.created_at,
+         updated_at = excluded.updated_at,
+         deleted_at = excluded.deleted_at,
+         pending = excluded.pending,
+         deleted = excluded.deleted,
+         lat = excluded.lat,
+         lng = excluded.lng,
+         precision_m = excluded.precision_m,
+         bateria_pct = excluded.bateria_pct,
+         estado = excluded.estado,
+         creada_en = excluded.creada_en
+       WHERE (alerta.pending = 0 AND excluded.updated_at >= alerta.updated_at)
+          OR excluded.updated_at > alerta.updated_at`,
+      valoresAlerta(alerta),
+    );
+  }
+
+  async confirmarSubida(alerta: Alerta, updatedAtLocal: string): Promise<void> {
+    const base = await this.obtenerBase();
+    await base.runAsync(
+      `UPDATE alerta
+       SET remote_id = ?, created_at = ?, updated_at = ?, deleted_at = ?,
+           pending = 0, deleted = ?, lat = ?, lng = ?, precision_m = ?,
+           bateria_pct = ?, estado = ?, creada_en = ?
+       WHERE id = ? AND updated_at = ? AND pending = 1`,
+      [
+        alerta.remote_id,
+        alerta.created_at,
+        alerta.updated_at,
+        alerta.deleted_at,
+        alerta.deleted,
+        alerta.lat,
+        alerta.lng,
+        alerta.precision_m,
+        alerta.bateria_pct,
+        alerta.estado,
+        alerta.creada_en,
+        alerta.id,
+        updatedAtLocal,
+      ],
+    );
+  }
+
+  async marcarSincronizado(id: string, updatedAtLocal: string): Promise<void> {
+    const base = await this.obtenerBase();
+    await base.runAsync(
+      `UPDATE alerta
+       SET remote_id = ?, pending = 0
+       WHERE id = ? AND updated_at = ? AND pending = 1 AND deleted = 1`,
+      [id, id, updatedAtLocal],
+    );
+  }
+
   async marcarBorrado(id: string, ahora: Date): Promise<void> {
     const base = await this.obtenerBase();
     const timestamp = ahora.toISOString();
@@ -90,4 +170,22 @@ export class AlertasRepositorySqlite implements AlertasRepository {
     }
     return abrirBase();
   }
+}
+
+function valoresAlerta(alerta: Alerta): (string | number | null)[] {
+  return [
+    alerta.id,
+    alerta.remote_id,
+    alerta.created_at,
+    alerta.updated_at,
+    alerta.deleted_at,
+    alerta.pending,
+    alerta.deleted,
+    alerta.lat,
+    alerta.lng,
+    alerta.precision_m,
+    alerta.bateria_pct,
+    alerta.estado,
+    alerta.creada_en,
+  ];
 }

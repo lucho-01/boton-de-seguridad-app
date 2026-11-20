@@ -41,3 +41,15 @@ export {
   type Credenciales,
   type EstadoServidor,
 } from "./auth";
+export {
+  borrarAlertaApi,
+  borrarContactoApi,
+  guardarAlertaApi,
+  guardarContactoApi,
+  obtenerAlertas,
+  obtenerContactos,
+  type AlertaApi,
+  type ContactoApi,
+  type PaginaAlertas,
+  type PaginaContactos,
+} from "./sync";

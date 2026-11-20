@@ -18,8 +18,9 @@ Lo mantiene el orquestador: se actualiza al cerrar cada feature (spec aprobada �
 - **M11 construido el 2026-11-20** (ADR-0007 → spec → lint/tipos/formato en verde → 497 pruebas → `docs/handoffs/m11.md`): cuando `expo-sms` no está disponible, se muestra un aviso y una acción accesible para copiar el mensaje al portapapeles; se confirma éxito y se informa el fallo de copia.
 - **M12 construido el 2026-11-20** (spec → lint/tipos en verde → 46 suites y 504 pruebas → `docs/handoffs/m12.md`): registro local de alertas canceladas y mensajes preparados, migración SQLite y pantalla de historial con estados de carga, vacío, error y reintento.
 - **M13 construido el 2026-11-20** (spec → lint/tipos en verde → 49 suites y 514 pruebas → `docs/handoffs/m13.md`): CRUD SQLite de alertas, borrado lógico pendiente de sincronización, pruebas de repositorios y migración, y actualización atómica del contacto principal.
+- **M14 construido localmente el 2026-11-20** (lint/tipos en verde → 53 suites y 538 pruebas → `docs/handoffs/m14.md`): sincronización offline-first de contactos y alertas, vinculación del dispositivo a una cuenta, ejecución automática al restaurar sesión/volver a primer plano, estado y reintento en Ajustes, cursores incrementales y protección ante cambios locales concurrentes. **Pendiente aplicar el contrato actualizado (`principal` y `after_id`) en el repositorio separado de la API.**
 - **Spec en curso:** ninguna.
-- **Siguiente:** M14 (sincronización offline-first con la API).
+- **Siguiente:** integrar y validar M14 contra `boton-de-seguridad-api`.
 
 ## Decisiones tomadas
 

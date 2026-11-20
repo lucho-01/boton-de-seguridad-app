@@ -27,11 +27,17 @@ Errores: correo repetido → `409`; credenciales inválidas → `401` con el **m
 
 ## 2. Sincronización (por recurso privado)
 
-| Método y ruta                    | Comportamiento                                                                                                                                                                               |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/<recurso>?since=<ISO>` | `200 { items: [{ id, ...campos, created_at, updated_at, deleted_at }], servidor_ahora }`. Máx. 500: repetir con el último `updated_at` hasta recibir menos de 500. Incluye borrados lógicos. |
-| `PUT /api/<recurso>/<id>`        | Crea o reemplaza (idempotente). Valida con Zod y descarta campos no declarados. `200` con el documento.                                                                                      |
-| `DELETE /api/<recurso>/<id>`     | Borrado lógico (`deleted_at`). `200 { ok: true }`; `404` si no existe.                                                                                                                       |
+| Método y ruta                                    | Comportamiento                                                                                                                                                         |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/<recurso>?since=<ISO>[&after_id=<id>]` | `200 { items: [{ id, ...campos, created_at, updated_at, deleted_at }], servidor_ahora }`. Máx. 500, orden ascendente por `(updated_at, id)`. Incluye borrados lógicos. |
+| `PUT /api/<recurso>/<id>`                        | Crea o reemplaza (idempotente). Valida con Zod y descarta campos no declarados. `200` con el documento.                                                                |
+| `DELETE /api/<recurso>/<id>`                     | Borrado lógico (`deleted_at`). `200 { ok: true }`; `404` si no existe.                                                                                                 |
+
+**Paginación:** la primera llamada devuelve filas con `updated_at > since`.
+Para continuar una página completa, enviar los dos valores del último elemento:
+`since=updated_at` y `after_id=id`. La API devuelve `updated_at > since` o, si
+coincide el timestamp, `id > after_id`. Ambos recursos se ordenan ascendentemente
+por `(updated_at, id)`.
 
 Recursos: `contactos` (contacto de confianza) y `alertas`.
 
@@ -42,7 +48,7 @@ Recursos: `contactos` (contacto de confianza) y `alertas`.
 ```text
 contactos:
   id (UUID, lo genera la app) · nombre: string · telefono: string (10 dígitos)
-  parentesco: string|null · created_at · updated_at · deleted_at
+  parentesco: string|null · principal: 0|1 · created_at · updated_at · deleted_at
 
 alertas:
   id (UUID) · lat: number|null · lng: number|null · precision_m: number|null

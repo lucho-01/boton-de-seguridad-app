@@ -35,6 +35,7 @@ export const ContactoConfianzaSchema = z.object({
   nombre: z.string().min(1),
   telefono: z.string().regex(/^\d{10}$/),
   parentesco: z.string().nullable(),
+  principal: z.union([z.literal(0), z.literal(1)]),
   created_at: z.iso.datetime(),
   updated_at: z.iso.datetime(),
   deleted_at: z.iso.datetime().nullable(),

@@ -27,6 +27,17 @@ export interface ContactosRepository {
   marcarPrincipal(id: string, ahora: Date): Promise<void>;
 }
 
+export interface ContactosSyncRepository extends ContactosRepository {
+  /** Lista todos los cambios locales pendientes, incluidos los borrados. */
+  listarPendientes(): Promise<ContactoConfianza[]>;
+  /** Aplica un registro remoto solo si no existe un cambio local más reciente. */
+  guardarDesdeApi(contacto: ContactoConfianza): Promise<void>;
+  /** Confirma una subida solo si la fila no cambió mientras esperaba la API. */
+  confirmarSubida(contacto: ContactoConfianza, updatedAtLocal: string): Promise<void>;
+  /** Confirma un borrado remoto solo si la fila local conserva su versión. */
+  marcarSincronizado(id: string, updatedAtLocal: string): Promise<void>;
+}
+
 /** Fila leída de la base de datos (tipos de SQLite son laxos, se hace cast). */
 interface FilaContacto {
   id: string;
@@ -43,7 +54,7 @@ interface FilaContacto {
 }
 
 /** Repositorio de contactos sobre SQLite. */
-export class ContactosRepositorySqlite implements ContactosRepository {
+export class ContactosRepositorySqlite implements ContactosSyncRepository {
   constructor(private readonly basePromise: Promise<BaseRepositorio> = abrirBase()) {}
 
   async listar(): Promise<ContactoConfianza[]> {
@@ -54,6 +65,18 @@ export class ContactosRepositorySqlite implements ContactosRepository {
        FROM contacto_confianza
        WHERE deleted = 0
        ORDER BY LOWER(nombre)`,
+    );
+    return filas.map((fila) => filaDeContacto(fila));
+  }
+
+  async listarPendientes(): Promise<ContactoConfianza[]> {
+    const base = await this.basePromise;
+    const filas = await base.getAllAsync<FilaContacto>(
+      `SELECT id, nombre, telefono, parentesco, remote_id, created_at,
+              updated_at, deleted_at, pending, deleted, principal
+       FROM contacto_confianza
+       WHERE pending = 1
+       ORDER BY updated_at, id`,
     );
     return filas.map((fila) => filaDeContacto(fila));
   }
@@ -95,6 +118,65 @@ export class ContactosRepositorySqlite implements ContactosRepository {
       ],
     );
     return contacto;
+  }
+
+  async guardarDesdeApi(contacto: ContactoConfianza): Promise<void> {
+    const base = await this.basePromise;
+    await base.runAsync(
+      `INSERT INTO contacto_confianza
+        (id, nombre, telefono, parentesco, remote_id, created_at, updated_at,
+         deleted_at, pending, deleted, principal)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET
+         nombre = excluded.nombre,
+         telefono = excluded.telefono,
+         parentesco = excluded.parentesco,
+         remote_id = excluded.remote_id,
+         created_at = excluded.created_at,
+         updated_at = excluded.updated_at,
+         deleted_at = excluded.deleted_at,
+         pending = excluded.pending,
+         deleted = excluded.deleted,
+         principal = excluded.principal
+       WHERE (contacto_confianza.pending = 0
+              AND excluded.updated_at >= contacto_confianza.updated_at)
+          OR excluded.updated_at > contacto_confianza.updated_at`,
+      valoresContacto(contacto),
+    );
+  }
+
+  async confirmarSubida(contacto: ContactoConfianza, updatedAtLocal: string): Promise<void> {
+    const base = await this.basePromise;
+    await base.runAsync(
+      `UPDATE contacto_confianza
+       SET nombre = ?, telefono = ?, parentesco = ?, remote_id = ?,
+           created_at = ?, updated_at = ?, deleted_at = ?, pending = 0,
+           deleted = ?, principal = ?
+       WHERE id = ? AND updated_at = ? AND pending = 1`,
+      [
+        contacto.nombre,
+        contacto.telefono,
+        contacto.parentesco,
+        contacto.remote_id,
+        contacto.created_at,
+        contacto.updated_at,
+        contacto.deleted_at,
+        contacto.deleted,
+        contacto.principal,
+        contacto.id,
+        updatedAtLocal,
+      ],
+    );
+  }
+
+  async marcarSincronizado(id: string, updatedAtLocal: string): Promise<void> {
+    const base = await this.basePromise;
+    await base.runAsync(
+      `UPDATE contacto_confianza
+       SET remote_id = ?, pending = 0
+       WHERE id = ? AND updated_at = ? AND pending = 1 AND deleted = 1`,
+      [id, id, updatedAtLocal],
+    );
   }
 
   async marcarBorrado(id: string, ahora: Date): Promise<void> {
@@ -151,4 +233,20 @@ function filaDeContacto(fila: FilaContacto): ContactoConfianza {
     deleted,
     principal,
   };
+}
+
+function valoresContacto(contacto: ContactoConfianza): (string | number | null)[] {
+  return [
+    contacto.id,
+    contacto.nombre,
+    contacto.telefono,
+    contacto.parentesco,
+    contacto.remote_id,
+    contacto.created_at,
+    contacto.updated_at,
+    contacto.deleted_at,
+    contacto.pending,
+    contacto.deleted,
+    contacto.principal,
+  ];
 }

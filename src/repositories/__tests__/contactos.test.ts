@@ -56,6 +56,15 @@ describe("ContactosRepositorySqlite · M13", () => {
     expect(getAllAsync.mock.calls[1][1]).toEqual([contacto.id]);
   });
 
+  it("lista todos los pendientes, incluidos los borrados", async () => {
+    const { repositorio, getAllAsync } = repositorioConBase();
+
+    await repositorio.listarPendientes();
+
+    expect(getAllAsync.mock.calls[0][0]).toContain("WHERE pending = 1");
+    expect(getAllAsync.mock.calls[0][0]).toContain("ORDER BY updated_at, id");
+  });
+
   it("guarda con SQL parametrizado", async () => {
     const { repositorio, runAsync } = repositorioConBase();
     const contacto = {
@@ -119,5 +128,52 @@ describe("ContactosRepositorySqlite · M13", () => {
       "contacto-1",
       "contacto-1",
     ]);
+  });
+
+  it("aplica registros remotos con protección por versión", async () => {
+    const { repositorio, runAsync } = repositorioConBase();
+    const contacto: ContactoConfianza = {
+      id: "contacto-1",
+      nombre: "Ana",
+      telefono: "3001112233",
+      parentesco: "Madre",
+      remote_id: "contacto-1",
+      created_at: AHORA.toISOString(),
+      updated_at: AHORA.toISOString(),
+      deleted_at: null,
+      pending: 0,
+      deleted: 0,
+      principal: 1,
+    };
+
+    await repositorio.guardarDesdeApi(contacto);
+
+    expect(runAsync.mock.calls[0][0]).toContain("ON CONFLICT(id) DO UPDATE");
+    expect(runAsync.mock.calls[0][0]).toContain(
+      "excluded.updated_at > contacto_confianza.updated_at",
+    );
+    expect(runAsync.mock.calls[0][1]).toContain(contacto.id);
+  });
+
+  it("confirma la subida con control de versión local", async () => {
+    const { repositorio, runAsync } = repositorioConBase();
+    const contacto: ContactoConfianza = {
+      id: "contacto-1",
+      nombre: "Ana",
+      telefono: "3001112233",
+      parentesco: "Madre",
+      remote_id: "contacto-1",
+      created_at: AHORA.toISOString(),
+      updated_at: AHORA.toISOString(),
+      deleted_at: null,
+      pending: 0,
+      deleted: 0,
+      principal: 1,
+    };
+
+    await repositorio.confirmarSubida(contacto, "2026-11-20T21:59:00.000Z");
+
+    expect(runAsync.mock.calls[0][0]).toContain("WHERE id = ? AND updated_at = ? AND pending = 1");
+    expect(runAsync.mock.calls[0][1]).toContain("2026-11-20T21:59:00.000Z");
   });
 });

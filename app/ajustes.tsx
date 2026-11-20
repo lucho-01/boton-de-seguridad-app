@@ -9,9 +9,10 @@ import { Parrafo } from "@/components/Parrafo";
 import { TituloPantalla } from "@/components/TituloPantalla";
 import { type SesionConUsuario, correoDeSesion } from "@/components/estadoSesion";
 import { COLOR, ESPACIO, RADIO } from "@/components/tema";
-import { useSesion } from "@/controllers/sesionContext";
+import { useSesion, useSincronizacion } from "@/controllers/sesionContext";
 import { useAjustesController } from "@/controllers/useAjustesController";
 import { type EstadoApi } from "@/controllers/useSesionController";
+import type { SincronizacionController } from "@/controllers/useSincronizacionController";
 import {
   LIMITE_MENSAJE_BASE,
   UMBRAL_SACUDIDA_POR_DEFECTO,
@@ -79,6 +80,7 @@ interface VistaAjustesProps {
   sesionConUsuario: SesionConUsuario | null;
   iniciando: boolean;
   cerrar: () => void;
+  sincronizacion: SincronizacionController;
   guardarAjustes: () => Promise<void>;
   restablecerAjustes: () => Promise<void>;
 }
@@ -100,6 +102,7 @@ function VistaAjustes({
   sesionConUsuario,
   iniciando,
   cerrar,
+  sincronizacion,
   guardarAjustes,
   restablecerAjustes,
 }: VistaAjustesProps) {
@@ -112,6 +115,21 @@ function VistaAjustes({
         iniciando={iniciando}
         onCerrar={cerrar}
       />
+      <View style={styles.bloqueAjustes}>
+        <Parrafo>Sincronización de contactos y alertas</Parrafo>
+        <Parrafo>{sincronizacion.mensaje}</Parrafo>
+        {sesionConUsuario !== null && (
+          <Boton
+            texto="Sincronizar ahora"
+            etiquetaAccesible="Sincronizar contactos y alertas ahora"
+            onPress={() => {
+              void sincronizacion.sincronizar();
+            }}
+            deshabilitado={sincronizacion.estado === "sincronizando"}
+            variante="secundario"
+          />
+        )}
+      </View>
       <View style={styles.bloqueAjustes}>
         <Parrafo>Sensibilidad de la sacudida (para M7)</Parrafo>
         <CampoNumerico
@@ -175,6 +193,7 @@ export default function PantallaAjustes({
   controlador?: ReturnType<typeof useAjustesController>;
 }): ReactNode {
   const { sesion, iniciando, estadoApi, comprobando, verificarApi, cerrar } = useSesion();
+  const sincronizacion = useSincronizacion();
   const sesionConUsuario: SesionConUsuario | null = sesion;
   const ctl = controlador ?? useAjustesController();
   const [umbral, setUmbral] = useState(ctl.ajustes.umbralSacudida.toString());
@@ -218,6 +237,7 @@ export default function PantallaAjustes({
       sesionConUsuario={sesionConUsuario}
       iniciando={iniciando}
       cerrar={cerrar}
+      sincronizacion={sincronizacion}
       guardarAjustes={guardarAjustes}
       restablecerAjustes={restablecerAjustes}
     />

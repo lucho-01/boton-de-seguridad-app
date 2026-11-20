@@ -63,6 +63,15 @@ describe("AlertasRepositorySqlite · M13", () => {
     await expect(repositorio.obtenerPorId(ALERTA.id)).resolves.toEqual(ALERTA);
   });
 
+  it("lista todos los pendientes, incluidos los borrados", async () => {
+    const { repositorio, getAllAsync } = repositorioConBase([ALERTA]);
+
+    await repositorio.listarPendientes();
+
+    expect(getAllAsync.mock.calls[0][0]).toContain("WHERE pending = 1");
+    expect(getAllAsync.mock.calls[0][0]).toContain("ORDER BY updated_at, id");
+  });
+
   it("obtiene por id con parámetro y devuelve null si no existe", async () => {
     const { repositorio, getAllAsync } = repositorioConBase();
 
@@ -108,5 +117,26 @@ describe("AlertasRepositorySqlite · M13", () => {
       AHORA.toISOString(),
       ALERTA.id,
     ]);
+  });
+
+  it("aplica registros remotos con protección por versión", async () => {
+    const { repositorio, runAsync } = repositorioConBase();
+    const sincronizada = { ...ALERTA, remote_id: ALERTA.id, pending: 0 };
+
+    await repositorio.guardarDesdeApi(sincronizada);
+
+    expect(runAsync.mock.calls[0][0]).toContain("ON CONFLICT(id) DO UPDATE");
+    expect(runAsync.mock.calls[0][0]).toContain("excluded.updated_at > alerta.updated_at");
+    expect(runAsync.mock.calls[0][1]).toContain(ALERTA.id);
+  });
+
+  it("confirma la subida solo si la fila conserva la versión enviada", async () => {
+    const { repositorio, runAsync } = repositorioConBase();
+    const sincronizada = { ...ALERTA, remote_id: ALERTA.id, pending: 0 };
+
+    await repositorio.confirmarSubida(sincronizada, "2026-11-20T21:59:00.000Z");
+
+    expect(runAsync.mock.calls[0][0]).toContain("WHERE id = ? AND updated_at = ? AND pending = 1");
+    expect(runAsync.mock.calls[0][1]).toContain("2026-11-20T21:59:00.000Z");
   });
 });

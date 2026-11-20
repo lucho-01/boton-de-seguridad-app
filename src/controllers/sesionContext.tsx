@@ -6,17 +6,57 @@
  * Si alguien usa `useSesion()` fuera del proveedor se lanza un error claro.
  */
 
-import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { useCallback, useContext, useEffect, useMemo, createContext, type ReactNode } from "react";
+import { AppState } from "react-native";
 
 import { useSesionController, type SesionController } from "./useSesionController";
+import {
+  useSincronizacionController,
+  type SincronizacionController,
+} from "./useSincronizacionController";
 
 const SesionContext = createContext<SesionController | null>(null);
+const SincronizacionContext = createContext<SincronizacionController | null>(null);
 
 /** Envuelve la app; las pantallas leen el estado con `useSesion()`. */
 export function SesionProvider({ children }: { children: ReactNode }) {
   const controlador = useSesionController();
-  const valor = useMemo<SesionController>(() => controlador, [controlador]);
-  return <SesionContext.Provider value={valor}>{children}</SesionContext.Provider>;
+  const usuarioId = controlador.sesion?.usuario.id ?? null;
+  const sincronizacion = useSincronizacionController(usuarioId);
+  const cerrar = useCallback(async () => {
+    await sincronizacion.esperar();
+    await controlador.cerrar();
+  }, [controlador.cerrar, sincronizacion.esperar]);
+  const valor = useMemo<SesionController>(
+    () => ({ ...controlador, cerrar }),
+    [controlador, cerrar],
+  );
+
+  useEffect(() => {
+    if (controlador.iniciando || usuarioId === null) {
+      return;
+    }
+    void sincronizacion.sincronizar();
+  }, [controlador.iniciando, usuarioId, sincronizacion.sincronizar]);
+
+  useEffect(() => {
+    const suscripcion = AppState.addEventListener("change", (estado) => {
+      if (estado === "active" && usuarioId !== null) {
+        void sincronizacion.sincronizar();
+      }
+    });
+    return () => {
+      suscripcion.remove();
+    };
+  }, [usuarioId, sincronizacion.sincronizar]);
+
+  return (
+    <SesionContext.Provider value={valor}>
+      <SincronizacionContext.Provider value={sincronizacion}>
+        {children}
+      </SincronizacionContext.Provider>
+    </SesionContext.Provider>
+  );
 }
 
 /**
@@ -29,6 +69,16 @@ export function useSesion(): SesionController {
   if (valor === null) {
     throw new Error(
       "useSesion() debe usarse dentro de <SesionProvider>. Envuelve la app en app/_layout.tsx.",
+    );
+  }
+  return valor;
+}
+
+export function useSincronizacion(): SincronizacionController {
+  const valor = useContext(SincronizacionContext);
+  if (valor === null) {
+    throw new Error(
+      "useSincronizacion() debe usarse dentro de <SesionProvider>. Envuelve la app en app/_layout.tsx.",
     );
   }
   return valor;
