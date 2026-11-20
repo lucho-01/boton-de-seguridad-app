@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { COLOR, RADIO } from "@/components/tema";
+
 /** Texto literal del botón alternativo y de su pista (los usan las pruebas). */
 export const TEXTO_BOTON_ALTERNATIVO = "Armar la alerta con un botón";
 export const ETIQUETA_BOTON_ALTERNATIVO = "Armar la alerta con un botón (mantén presionado)";
@@ -83,38 +85,38 @@ const styles = StyleSheet.create({
   },
   boton: {
     alignItems: "center",
-    borderRadius: 12,
-    borderWidth: 2,
+    borderRadius: RADIO.md,
+    borderWidth: 1.5,
     justifyContent: "center",
-    minHeight: 48,
+    minHeight: 50,
     minWidth: 48,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 13,
     width: "100%",
   },
   botonDisponible: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#0B5FFF",
+    backgroundColor: COLOR.superficie,
+    borderColor: COLOR.marca,
   },
   botonApagado: {
-    backgroundColor: "#E1E4E8",
-    borderColor: "#C6CBD1",
+    backgroundColor: "#E7EBF0",
+    borderColor: "#D3DAE3",
   },
   texto: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
     textAlign: "center",
   },
   textoDisponible: {
-    color: "#0B5FFF",
+    color: COLOR.marca,
   },
   textoApagado: {
-    color: "#4A5560",
+    color: "#6B7684",
   },
   pista: {
-    color: "#4A5560",
-    fontSize: 16,
-    lineHeight: 22,
+    color: COLOR.textoSuave,
+    fontSize: 14,
+    lineHeight: 20,
     textAlign: "center",
   },
 });

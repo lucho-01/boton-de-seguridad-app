@@ -22,6 +22,7 @@ import { useRouter } from "expo-router";
 import { Boton } from "@/components/Boton";
 import { PantallaConAviso } from "@/components/PantallaConAviso";
 import { TituloPantalla } from "@/components/TituloPantalla";
+import { COLOR, ESPACIO, RADIO } from "@/components/tema";
 import { useSesion } from "@/controllers/sesionContext";
 import { ERROR_CAMPOS_VACIOS, ERROR_CORREO_INVALIDO } from "@/services/auth";
 
@@ -296,42 +297,47 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   formulario: {
-    gap: 16,
+    backgroundColor: COLOR.superficie,
+    borderColor: COLOR.borde,
+    borderRadius: RADIO.lg,
+    borderWidth: 1,
+    gap: ESPACIO.lg,
+    padding: ESPACIO.xl,
   },
   campo: {
     gap: 4,
   },
   etiqueta: {
-    color: "#11181C",
-    fontSize: 16,
+    color: COLOR.texto,
+    fontSize: 15,
     fontWeight: "600",
     marginBottom: 6,
   },
   input: {
-    backgroundColor: "#F3F4F6",
-    borderRadius: 8,
+    backgroundColor: COLOR.superficieAlterna,
+    borderColor: COLOR.bordeFuerte,
+    borderRadius: RADIO.sm,
     borderWidth: 1,
-    borderColor: "#C6CBD1",
-    color: "#11181C",
+    color: COLOR.texto,
     fontSize: 16,
     minHeight: 48,
-    paddingHorizontal: 12,
+    paddingHorizontal: ESPACIO.md,
   },
   error: {
-    color: "#B3261E",
+    color: COLOR.peligro,
     fontSize: 14,
   },
   enlaces: {
     alignItems: "center",
     gap: 4,
-    marginTop: 8,
+    marginTop: ESPACIO.sm,
   },
   enlacePresionable: {
-    paddingVertical: 4,
+    paddingVertical: 8,
   },
   textoEnlace: {
-    color: "#0B5FFF",
+    color: COLOR.marca,
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 });

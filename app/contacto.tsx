@@ -6,6 +6,7 @@ import { Boton } from "@/components/Boton";
 import { PantallaConAviso } from "@/components/PantallaConAviso";
 import { Parrafo } from "@/components/Parrafo";
 import { TituloPantalla } from "@/components/TituloPantalla";
+import { COLOR, ESPACIO, RADIO } from "@/components/tema";
 import { useContactosController, type DatosContacto, type ContactoConfianza } from "@/controllers";
 
 /** Título cuando se crea un contacto nuevo. */
@@ -246,32 +247,32 @@ export default function PantallaContacto({ controlador, id }: FormularioContacto
 
 const styles = StyleSheet.create({
   campo: {
-    marginBottom: 16,
+    marginBottom: ESPACIO.lg,
   },
   etiqueta: {
-    color: "#11181C",
-    fontSize: 16,
+    color: COLOR.texto,
+    fontSize: 15,
     fontWeight: "600",
     marginBottom: 6,
   },
   input: {
-    backgroundColor: "#F3F4F6",
-    borderRadius: 8,
+    backgroundColor: COLOR.superficieAlterna,
+    borderColor: COLOR.bordeFuerte,
+    borderRadius: RADIO.sm,
     borderWidth: 1,
-    borderColor: "#C6CBD1",
-    color: "#11181C",
+    color: COLOR.texto,
     fontSize: 16,
     minHeight: 48,
-    paddingHorizontal: 12,
+    paddingHorizontal: ESPACIO.md,
   },
   error: {
-    color: "#B3261E",
+    color: COLOR.peligro,
     fontSize: 14,
     marginTop: 4,
   },
   botones: {
     flexDirection: "row",
-    gap: 8,
-    marginTop: 24,
+    gap: ESPACIO.sm,
+    marginTop: ESPACIO.lg,
   },
 });

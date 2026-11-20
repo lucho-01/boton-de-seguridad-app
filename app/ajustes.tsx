@@ -8,6 +8,7 @@ import { PantallaConAviso } from "@/components/PantallaConAviso";
 import { Parrafo } from "@/components/Parrafo";
 import { TituloPantalla } from "@/components/TituloPantalla";
 import { type SesionConUsuario, correoDeSesion } from "@/components/estadoSesion";
+import { COLOR, ESPACIO, RADIO } from "@/components/tema";
 import { useSesion } from "@/controllers/sesionContext";
 import { useAjustesController } from "@/controllers/useAjustesController";
 import { type EstadoApi } from "@/controllers/useSesionController";
@@ -225,34 +226,33 @@ export default function PantallaAjustes({
 
 const styles = StyleSheet.create({
   bloqueAjustes: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
+    backgroundColor: COLOR.superficie,
+    borderColor: COLOR.borde,
+    borderRadius: RADIO.md,
     borderWidth: 1,
-    borderColor: "#C6CBD1",
-    padding: 16,
-    marginBottom: 12,
+    padding: ESPACIO.lg,
   },
   campo: {
-    marginBottom: 16,
+    marginBottom: ESPACIO.lg,
   },
   etiqueta: {
-    color: "#11181C",
-    fontSize: 16,
+    color: COLOR.texto,
+    fontSize: 15,
     fontWeight: "600",
     marginBottom: 6,
   },
   input: {
-    backgroundColor: "#F3F4F6",
-    borderRadius: 8,
+    backgroundColor: COLOR.superficieAlterna,
+    borderColor: COLOR.bordeFuerte,
+    borderRadius: RADIO.sm,
     borderWidth: 1,
-    borderColor: "#C6CBD1",
-    color: "#11181C",
+    color: COLOR.texto,
     fontSize: 16,
     minHeight: 48,
-    paddingHorizontal: 12,
+    paddingHorizontal: ESPACIO.md,
   },
   error: {
-    color: "#B3261E",
+    color: COLOR.peligro,
     fontSize: 14,
     marginTop: 4,
   },
@@ -261,12 +261,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   textoAyuda: {
-    color: "#4A5560",
-    fontSize: 14,
+    color: COLOR.textoSuave,
+    fontSize: 13,
   },
   botones: {
     flexDirection: "row",
-    gap: 8,
-    marginTop: 16,
+    flexWrap: "wrap",
+    gap: ESPACIO.sm,
+    marginTop: ESPACIO.sm,
   },
 });

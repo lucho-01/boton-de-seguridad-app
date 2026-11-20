@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { StyleSheet, Text } from "react-native";
 
+import { COLOR } from "@/components/tema";
+
 interface ParrafoProps {
   /** Texto informativo de la pantalla. */
   children: ReactNode;
@@ -22,7 +24,7 @@ export function Parrafo({ children }: ParrafoProps) {
 
 const styles = StyleSheet.create({
   parrafo: {
-    color: "#1F2933",
+    color: COLOR.textoSuave,
     fontSize: 16,
     lineHeight: 24,
   },

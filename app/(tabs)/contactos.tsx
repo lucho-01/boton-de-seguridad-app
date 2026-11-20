@@ -7,6 +7,7 @@ import { Boton } from "@/components/Boton";
 import { PantallaConAviso } from "@/components/PantallaConAviso";
 import { Parrafo } from "@/components/Parrafo";
 import { TituloPantalla } from "@/components/TituloPantalla";
+import { COLOR, ESPACIO, RADIO, SOMBRA_TARJETA } from "@/components/tema";
 import { useContactosController, type ContactoConfianza, esPrincipal } from "@/controllers";
 
 /** Texto del estado vacío. */
@@ -42,6 +43,15 @@ function etiquetaPrincipalDeFila(contacto: ContactoConfianza): string {
     return `${nombre}. Desmarcar como principal`;
   }
   return `${nombre}. Marcar como principal`;
+}
+
+/** Inicial del contacto para el avatar de la fila (vacío → «?»). */
+function inicialDe(nombre: string): string {
+  const limpio = nombre.trim();
+  if (limpio.length === 0) {
+    return "?";
+  }
+  return limpio.slice(0, 1).toUpperCase();
 }
 
 interface FilaContactoProps {
@@ -87,6 +97,43 @@ function ConfirmacionEliminar({
           variante="peligro"
         />
       </View>
+    </View>
+  );
+}
+
+/** Cabecera de la fila: avatar con inicial, datos y etiqueta de principal. */
+function CabeceraContacto({
+  contacto,
+  principal,
+}: {
+  contacto: ContactoConfianza;
+  principal: boolean;
+}) {
+  return (
+    <View style={styles.cabecera}>
+      <View style={styles.avatar}>
+        <Text allowFontScaling={false} style={styles.inicial}>
+          {inicialDe(contacto.nombre)}
+        </Text>
+      </View>
+      <View style={styles.datos}>
+        <Text allowFontScaling maxFontSizeMultiplier={1.6} style={styles.nombre}>
+          {contacto.nombre}
+        </Text>
+        <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.telefono}>
+          {contacto.telefono}
+        </Text>
+        {contacto.parentesco !== null && contacto.parentesco !== "" && (
+          <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.parentesco}>
+            {contacto.parentesco}
+          </Text>
+        )}
+      </View>
+      {principal && (
+        <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.etiquetaPrincipal}>
+          {TEXTO_PRINCIPAL}
+        </Text>
+      )}
     </View>
   );
 }
@@ -139,24 +186,7 @@ function FilaContacto({
             { transform: [{ translateX: desplazamiento.current }] },
           ]}
         >
-          <View style={styles.datos}>
-            <Text allowFontScaling maxFontSizeMultiplier={1.6} style={styles.nombre}>
-              {contacto.nombre}
-            </Text>
-            <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.telefono}>
-              {contacto.telefono}
-            </Text>
-            {contacto.parentesco !== null && contacto.parentesco !== "" && (
-              <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.parentesco}>
-                {contacto.parentesco}
-              </Text>
-            )}
-            {principal && (
-              <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.etiquetaPrincipal}>
-                {TEXTO_PRINCIPAL}
-              </Text>
-            )}
-          </View>
+          <CabeceraContacto contacto={contacto} principal={principal} />
           <View style={styles.botones}>
             <Boton
               texto="Editar"
@@ -277,73 +307,103 @@ export default function PantallaContactos({ controlador }: PantallaContactosProp
 
 const styles = StyleSheet.create({
   fila: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
+    backgroundColor: COLOR.superficie,
+    borderColor: COLOR.borde,
+    borderRadius: RADIO.md,
     borderWidth: 1,
-    borderColor: "#C6CBD1",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    marginBottom: 12,
+    marginBottom: ESPACIO.md,
     minHeight: 56,
     overflow: "hidden",
+    padding: ESPACIO.lg,
+    ...SOMBRA_TARJETA,
   },
   filaPrincipal: {
-    borderColor: "#0B5FFF",
+    backgroundColor: COLOR.marcaSuave,
+    borderColor: COLOR.marca,
+  },
+  cabecera: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: ESPACIO.md,
+  },
+  avatar: {
+    alignItems: "center",
+    backgroundColor: COLOR.marcaSuave,
+    borderRadius: RADIO.circulo,
+    height: 44,
+    justifyContent: "center",
+    width: 44,
+  },
+  inicial: {
+    color: COLOR.marcaOscura,
+    fontSize: 18,
+    fontWeight: "800",
   },
   datos: {
     flex: 1,
   },
   nombre: {
-    color: "#11181C",
+    color: COLOR.texto,
     fontSize: 17,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   telefono: {
-    color: "#4A5560",
+    color: COLOR.textoSuave,
     fontSize: 15,
     marginTop: 2,
   },
   parentesco: {
-    color: "#4A5560",
+    color: COLOR.textoSuave,
     fontSize: 14,
     fontStyle: "italic",
     marginTop: 2,
   },
   etiquetaPrincipal: {
-    color: "#0B5FFF",
-    fontSize: 14,
-    fontWeight: "700",
-    marginTop: 2,
+    backgroundColor: COLOR.marca,
+    borderRadius: RADIO.circulo,
+    color: COLOR.blanco,
+    fontSize: 12,
+    fontWeight: "800",
+    overflow: "hidden",
+    paddingHorizontal: ESPACIO.sm,
+    paddingVertical: 2,
   },
   botones: {
     flexDirection: "row",
-    gap: 8,
+    flexWrap: "wrap",
+    gap: ESPACIO.sm,
+    marginTop: ESPACIO.md,
   },
   confirmacion: {
-    backgroundColor: "#FFF4E5",
-    borderColor: "#8A4B00",
+    backgroundColor: COLOR.avisoFondo,
+    borderColor: COLOR.avisoBorde,
     borderLeftWidth: 4,
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 12,
+    borderRadius: RADIO.sm,
+    marginTop: ESPACIO.md,
+    padding: ESPACIO.md,
   },
   pregunta: {
-    color: "#4A2A00",
+    color: COLOR.avisoTexto,
     fontSize: 15,
-    fontWeight: "600",
-    marginBottom: 10,
+    fontWeight: "700",
+    marginBottom: ESPACIO.sm,
   },
   botonesConfirmacion: {
     flexDirection: "row",
-    gap: 8,
+    gap: ESPACIO.sm,
   },
   lista: {
-    gap: 8,
+    gap: ESPACIO.xs,
   },
   estadoVacio: {
     alignItems: "center",
-    paddingVertical: 24,
+    backgroundColor: COLOR.superficie,
+    borderColor: COLOR.borde,
+    borderRadius: RADIO.md,
+    borderStyle: "dashed",
+    borderWidth: 1.5,
+    gap: ESPACIO.md,
+    paddingHorizontal: ESPACIO.lg,
+    paddingVertical: ESPACIO.xxl,
   },
 });
