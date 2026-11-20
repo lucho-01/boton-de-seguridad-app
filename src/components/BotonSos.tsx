@@ -137,13 +137,15 @@ export function BotonSos({ estado, progreso, onIniciar, onCancelar }: BotonSosPr
             testID="boton-sos"
             style={styles.zonaTactil}
           >
-            <AnilloProgreso
-              activo={activo}
-              color={apariencia.borde}
-              colorPista="#F7D8D6"
-              tamano={220}
-              grosor={8}
-            />
+            <View pointerEvents="none" style={styles.capaAnillo} testID="anillo-sos-superpuesto">
+              <AnilloProgreso
+                activo={activo}
+                color={apariencia.borde}
+                colorPista="#F7D8D6"
+                tamano={220}
+                grosor={8}
+              />
+            </View>
             <View
               style={[
                 styles.circulo,
@@ -242,7 +244,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 232,
     justifyContent: "center",
+    position: "relative",
     width: 232,
+  },
+  capaAnillo: {
+    alignItems: "center",
+    bottom: 0,
+    justifyContent: "center",
+    left: 0,
+    position: "absolute",
+    right: 0,
+    top: 0,
   },
   circulo: {
     alignItems: "center",

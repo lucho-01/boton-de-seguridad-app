@@ -64,6 +64,18 @@ function etiqueta(): string {
 }
 
 describe("BotonSos · acción accesible", () => {
+  it("mantiene el anillo superpuesto al botón, fuera del flujo vertical", async () => {
+    await montarEn("arming");
+
+    expect(screen.getByTestId("anillo-sos-superpuesto")).toHaveStyle({
+      bottom: 0,
+      left: 0,
+      position: "absolute",
+      right: 0,
+      top: 0,
+    });
+  });
+
   it("en reposo, el doble toque inicia el armado", async () => {
     const onIniciar = jest.fn();
     const onCancelar = jest.fn();

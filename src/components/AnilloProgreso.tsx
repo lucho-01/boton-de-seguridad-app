@@ -147,6 +147,7 @@ function offsetDeCapa(capa: "primera" | "segunda"): number {
 const styles = StyleSheet.create({
   contenedor: {
     alignItems: "center",
+    position: "relative",
     justifyContent: "center",
   },
   capa: {
