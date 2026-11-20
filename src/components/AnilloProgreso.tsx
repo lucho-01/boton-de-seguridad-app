@@ -99,7 +99,11 @@ function MediaLuna({ capa, avance, color, medidas }: MediaLunaProps) {
   const { tamano, grosor } = medidas;
   const offset = offsetDeCapa(capa);
   const estiloArco = useAnimatedStyle(() => {
-    const visible = limitar(avance.value * 2 - offset);
+    /* El recorte va en línea: dentro de un worklet no se puede llamar a una
+       función de JavaScript normal (provoca «synchronously call a Remote
+       Function»). `Math.min`/`Math.max` sí están disponibles en el hilo de UI. */
+    const sinRecortar = avance.value * 2 - offset;
+    const visible = Math.min(1, Math.max(0, sinRecortar));
     return {
       opacity: visible,
       transform: [{ rotate: `${offset * Math.PI + avance.value * Math.PI}rad` }],
@@ -138,11 +142,6 @@ function offsetDeCapa(capa: "primera" | "segunda"): number {
     return 0;
   }
   return OFFSET_MEDIA_VUELTA;
-}
-
-/** Recorta un valor al rango 0 → 1 (el avance nunca destapa más de una vuelta). */
-function limitar(valor: number): number {
-  return Math.min(1, Math.max(0, valor));
 }
 
 const styles = StyleSheet.create({
