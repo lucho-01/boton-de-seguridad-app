@@ -11,6 +11,8 @@ import type { SQLiteDatabase } from "expo-sqlite";
 import { abrirBase } from "@/db/abrirBase";
 import type { ContactoConfianza } from "@/services/contactos";
 
+type BaseRepositorio = Pick<SQLiteDatabase, "getAllAsync" | "runAsync">;
+
 /** Interfaz del repositorio: implementable con SQLite o con un doble en pruebas. */
 export interface ContactosRepository {
   /** Lista los contactos no borrados, ordenados por nombre. */
@@ -42,7 +44,7 @@ interface FilaContacto {
 
 /** Repositorio de contactos sobre SQLite. */
 export class ContactosRepositorySqlite implements ContactosRepository {
-  constructor(private readonly basePromise: Promise<SQLiteDatabase> = abrirBase()) {}
+  constructor(private readonly basePromise: Promise<BaseRepositorio> = abrirBase()) {}
 
   async listar(): Promise<ContactoConfianza[]> {
     const base = await this.basePromise;
@@ -107,12 +109,17 @@ export class ContactosRepositorySqlite implements ContactosRepository {
 
   async marcarPrincipal(id: string, ahora: Date): Promise<void> {
     const base = await this.basePromise;
-    await base.runAsync(`UPDATE contacto_confianza SET principal = 0 WHERE principal = 1`);
     await base.runAsync(
       `UPDATE contacto_confianza
-       SET principal = 1, updated_at = ?, pending = 1
-       WHERE id = ?`,
-      [ahora.toISOString(), id],
+       SET principal = CASE WHEN id = ? THEN 1 ELSE 0 END,
+           updated_at = ?, pending = 1
+       WHERE deleted = 0
+         AND EXISTS (
+           SELECT 1 FROM contacto_confianza
+           WHERE id = ? AND deleted = 0
+         )
+         AND (id = ? OR principal = 1)`,
+      [id, ahora.toISOString(), id, id],
     );
   }
 }

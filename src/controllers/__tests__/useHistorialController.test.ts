@@ -11,7 +11,15 @@ class AlertasEnMemoria implements AlertasRepository {
     return this.datos;
   }
 
+  async obtenerPorId(): Promise<Alerta | null> {
+    return null;
+  }
+
   async guardar(): Promise<void> {
+    return;
+  }
+
+  async marcarBorrado(): Promise<void> {
     return;
   }
 }
@@ -51,7 +59,9 @@ describe("useHistorialController · M12", () => {
       listar: async () => {
         throw new Error("error sqlite");
       },
+      obtenerPorId: async () => null,
       guardar: async () => undefined,
+      marcarBorrado: async () => undefined,
     };
     const vista = await renderHook(() => useHistorialController(repository));
 

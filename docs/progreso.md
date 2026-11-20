@@ -17,8 +17,9 @@ Lo mantiene el orquestador: se actualiza al cerrar cada feature (spec aprobada �
 - **M10 construido el 2026-11-20** (spec aprobada → construida → suite completa con 483 pruebas → `docs/handoffs/m10.md`): composición pura del SMS con enlace de mapa y batería, límite de 160 caracteres, redactor nativo de `expo-sms`, vista previa accesible y fallos seguros sin contactos, sin ubicación o sin SMS.
 - **M11 construido el 2026-11-20** (ADR-0007 → spec → lint/tipos/formato en verde → 497 pruebas → `docs/handoffs/m11.md`): cuando `expo-sms` no está disponible, se muestra un aviso y una acción accesible para copiar el mensaje al portapapeles; se confirma éxito y se informa el fallo de copia.
 - **M12 construido el 2026-11-20** (spec → lint/tipos en verde → 46 suites y 504 pruebas → `docs/handoffs/m12.md`): registro local de alertas canceladas y mensajes preparados, migración SQLite y pantalla de historial con estados de carga, vacío, error y reintento.
+- **M13 construido el 2026-11-20** (spec → lint/tipos en verde → 49 suites y 514 pruebas → `docs/handoffs/m13.md`): CRUD SQLite de alertas, borrado lógico pendiente de sincronización, pruebas de repositorios y migración, y actualización atómica del contacto principal.
 - **Spec en curso:** ninguna.
-- **Siguiente:** M13 (CRUD SQLite de contactos y alertas).
+- **Siguiente:** M14 (sincronización offline-first con la API).
 
 ## Decisiones tomadas
 

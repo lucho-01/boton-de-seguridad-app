@@ -11,8 +11,16 @@ class AlertasEnMemoria implements AlertasRepository {
     return this.guardadas;
   }
 
+  async obtenerPorId(): Promise<Alerta | null> {
+    return null;
+  }
+
   async guardar(alerta: Alerta): Promise<void> {
     this.guardadas.push(alerta);
+  }
+
+  async marcarBorrado(): Promise<void> {
+    return;
   }
 }
 
