@@ -4,6 +4,7 @@ import { GestureDetector, usePanGesture } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
 
 import { Boton } from "@/components/Boton";
+import { Icono, type NombreIcono } from "@/components/Icono";
 import { PantallaConAviso } from "@/components/PantallaConAviso";
 import { Parrafo } from "@/components/Parrafo";
 import { TituloPantalla } from "@/components/TituloPantalla";
@@ -26,14 +27,6 @@ export const TEXTO_PRINCIPAL = "Principal";
 export const UMBRAL_ELIMINAR = 96;
 /** Tiempo máximo entre dos toques para considerarlo doble toque (ms). */
 export const TIEMPO_DOBLE_TOQUE = 300;
-
-/** Texto del botón principal según si el contacto ya es principal o no. */
-function textoBotonPrincipalDe(principal: boolean): string {
-  if (principal) {
-    return "Desmarcar principal";
-  }
-  return "Marcar principal";
-}
 
 /** Etiqueta accesible de la fila (doble toque para marcar principal). */
 function etiquetaPrincipalDeFila(contacto: ContactoConfianza): string {
@@ -130,11 +123,49 @@ function CabeceraContacto({
         )}
       </View>
       {principal && (
-        <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.etiquetaPrincipal}>
-          {TEXTO_PRINCIPAL}
-        </Text>
+        <View style={styles.etiquetaPrincipal}>
+          <Icono nombre="principal" tamano={13} color={COLOR.exito} />
+          <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.textoPrincipal}>
+            {TEXTO_PRINCIPAL}
+          </Text>
+        </View>
       )}
     </View>
+  );
+}
+
+function AccionContacto({
+  etiqueta,
+  icono,
+  color,
+  onPress,
+  deshabilitado = false,
+  seleccionado = false,
+}: {
+  etiqueta: string;
+  icono: NombreIcono;
+  color: string;
+  onPress: () => void;
+  deshabilitado?: boolean;
+  seleccionado?: boolean;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={etiqueta}
+      accessibilityState={{ disabled: deshabilitado, selected: seleccionado }}
+      disabled={deshabilitado}
+      hitSlop={2}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.accion,
+        seleccionado && styles.accionSeleccionada,
+        deshabilitado && styles.accionDeshabilitada,
+        pressed && styles.accionPresionada,
+      ]}
+    >
+      <Icono nombre={icono} tamano={19} color={color} />
+    </Pressable>
   );
 }
 
@@ -188,27 +219,25 @@ function FilaContacto({
         >
           <CabeceraContacto contacto={contacto} principal={principal} />
           <View style={styles.botones}>
-            <Boton
-              texto="Editar"
-              etiquetaAccesible={ETIQUETA_EDITAR}
-              pistaAccesible="Abre el formulario para editar este contacto"
+            <AccionContacto
+              etiqueta={`${ETIQUETA_EDITAR}: ${contacto.nombre}`}
+              icono="editar"
+              color={COLOR.marca}
               onPress={() => onEditar(contacto.id)}
-              variante="secundario"
             />
-            <Boton
-              texto="Eliminar"
-              etiquetaAccesible={ETIQUETA_ELIMINAR}
-              pistaAccesible="Pide confirmación antes de borrar el contacto"
+            <AccionContacto
+              etiqueta={`${ETIQUETA_ELIMINAR}: ${contacto.nombre}`}
+              icono="eliminar"
+              color={COLOR.peligro}
               onPress={() => onPedirEliminar(contacto.id, contacto.nombre)}
-              variante="peligro"
               deshabilitado={estaConfirmando}
             />
-            <Boton
-              texto={textoBotonPrincipalDe(principal)}
-              etiquetaAccesible={ETIQUETA_MARCAR_PRINCIPAL}
-              pistaAccesible="Marca este contacto como el principal (solo uno a la vez)"
+            <AccionContacto
+              etiqueta={etiquetaDeAccionPrincipal(contacto, principal)}
+              icono="principal"
+              color={colorDePrincipal(principal)}
               onPress={() => onMarcarPrincipal(contacto.id)}
-              variante="secundario"
+              seleccionado={principal}
             />
           </View>
           <ConfirmacionEliminar
@@ -220,6 +249,20 @@ function FilaContacto({
       </Pressable>
     </GestureDetector>
   );
+}
+
+function colorDePrincipal(principal: boolean): string {
+  if (principal) {
+    return COLOR.exito;
+  }
+  return COLOR.textoSuave;
+}
+
+function etiquetaDeAccionPrincipal(contacto: ContactoConfianza, principal: boolean): string {
+  if (principal) {
+    return `Quitar a ${contacto.nombre} como contacto principal`;
+  }
+  return `${ETIQUETA_MARCAR_PRINCIPAL}: ${contacto.nombre}`;
 }
 
 interface PantallaContactosProps {
@@ -264,16 +307,20 @@ export default function PantallaContactos({ controlador }: PantallaContactosProp
 
   return (
     <PantallaConAviso conBarraDePestanas>
-      <TituloPantalla>Contactos</TituloPantalla>
+      <View style={styles.introduccion}>
+        <TituloPantalla>Contactos de confianza</TituloPantalla>
+        <Parrafo>Personas a quienes avisaremos si necesitas ayuda.</Parrafo>
+      </View>
       {ctl.aviso !== null && <Parrafo>{ctl.aviso}</Parrafo>}
       {ctl.contactos.length === 0 && (
         <View style={styles.estadoVacio}>
+          <View style={styles.iconoVacio}>
+            <Icono nombre="contactos" tamano={28} color={COLOR.marca} />
+          </View>
+          <Text allowFontScaling maxFontSizeMultiplier={1.5} style={styles.tituloVacio}>
+            Aún no hay contactos
+          </Text>
           <Parrafo>{TEXTO_SIN_CONTACTOS}</Parrafo>
-          <Boton
-            texto={TEXTO_AGREGAR_CONTACTO}
-            etiquetaAccesible="Añadir un contacto de confianza"
-            onPress={irAAgregar}
-          />
         </View>
       )}
       {ctl.contactos.length > 0 && (
@@ -301,25 +348,33 @@ export default function PantallaContactos({ controlador }: PantallaContactosProp
         onPress={irAAgregar}
         deshabilitado={!ctl.puedeAgregar}
       />
+      <View style={styles.privacidad}>
+        <Icono nombre="escudo" tamano={18} color={COLOR.marca} />
+        <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.textoPrivacidad}>
+          Tus datos se guardan de forma privada y se sincronizan solo con tu cuenta.
+        </Text>
+      </View>
     </PantallaConAviso>
   );
 }
 
 const styles = StyleSheet.create({
+  introduccion: {
+    gap: ESPACIO.xs,
+  },
   fila: {
     backgroundColor: COLOR.superficie,
     borderColor: COLOR.borde,
-    borderRadius: RADIO.md,
+    borderRadius: RADIO.lg,
     borderWidth: 1,
     marginBottom: ESPACIO.md,
-    minHeight: 56,
+    minHeight: 74,
     overflow: "hidden",
-    padding: ESPACIO.lg,
+    padding: ESPACIO.md,
     ...SOMBRA_TARJETA,
   },
   filaPrincipal: {
-    backgroundColor: COLOR.marcaSuave,
-    borderColor: COLOR.marca,
+    borderColor: "#BFEBDD",
   },
   cabecera: {
     alignItems: "center",
@@ -329,10 +384,10 @@ const styles = StyleSheet.create({
   avatar: {
     alignItems: "center",
     backgroundColor: COLOR.marcaSuave,
-    borderRadius: RADIO.circulo,
-    height: 44,
+    borderRadius: RADIO.sm,
+    height: 46,
     justifyContent: "center",
-    width: 44,
+    width: 46,
   },
   inicial: {
     color: COLOR.marcaOscura,
@@ -344,35 +399,57 @@ const styles = StyleSheet.create({
   },
   nombre: {
     color: COLOR.texto,
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: "700",
   },
   telefono: {
     color: COLOR.textoSuave,
-    fontSize: 15,
+    fontSize: 13,
     marginTop: 2,
   },
   parentesco: {
     color: COLOR.textoSuave,
-    fontSize: 14,
-    fontStyle: "italic",
+    fontSize: 12,
     marginTop: 2,
   },
   etiquetaPrincipal: {
-    backgroundColor: COLOR.marca,
+    alignItems: "center",
+    backgroundColor: COLOR.exitoSuave,
     borderRadius: RADIO.circulo,
-    color: COLOR.blanco,
-    fontSize: 12,
-    fontWeight: "800",
-    overflow: "hidden",
+    flexDirection: "row",
+    gap: 3,
     paddingHorizontal: ESPACIO.sm,
-    paddingVertical: 2,
+    paddingVertical: 5,
+  },
+  textoPrincipal: {
+    color: COLOR.exito,
+    fontSize: 12,
+    fontWeight: "700",
   },
   botones: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: ESPACIO.sm,
+    gap: ESPACIO.xs,
     marginTop: ESPACIO.md,
+  },
+  accion: {
+    alignItems: "center",
+    backgroundColor: COLOR.superficieAlterna,
+    borderColor: COLOR.borde,
+    borderRadius: RADIO.sm,
+    borderWidth: 1,
+    height: 44,
+    justifyContent: "center",
+    width: 44,
+  },
+  accionSeleccionada: {
+    backgroundColor: COLOR.exitoSuave,
+    borderColor: "#BFEBDD",
+  },
+  accionDeshabilitada: {
+    opacity: 0.45,
+  },
+  accionPresionada: {
+    opacity: 0.72,
   },
   confirmacion: {
     backgroundColor: COLOR.avisoFondo,
@@ -393,17 +470,44 @@ const styles = StyleSheet.create({
     gap: ESPACIO.sm,
   },
   lista: {
-    gap: ESPACIO.xs,
+    gap: 0,
   },
   estadoVacio: {
     alignItems: "center",
     backgroundColor: COLOR.superficie,
     borderColor: COLOR.borde,
-    borderRadius: RADIO.md,
+    borderRadius: RADIO.lg,
     borderStyle: "dashed",
-    borderWidth: 1.5,
-    gap: ESPACIO.md,
-    paddingHorizontal: ESPACIO.lg,
-    paddingVertical: ESPACIO.xxl,
+    borderWidth: 1,
+    gap: ESPACIO.sm,
+    paddingHorizontal: ESPACIO.xl,
+    paddingVertical: ESPACIO.xl,
+  },
+  iconoVacio: {
+    alignItems: "center",
+    backgroundColor: COLOR.marcaSuave,
+    borderRadius: RADIO.md,
+    height: 56,
+    justifyContent: "center",
+    width: 56,
+  },
+  tituloVacio: {
+    color: COLOR.texto,
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  privacidad: {
+    alignItems: "center",
+    backgroundColor: COLOR.marcaSuave,
+    borderRadius: RADIO.md,
+    flexDirection: "row",
+    gap: ESPACIO.sm,
+    padding: ESPACIO.md,
+  },
+  textoPrivacidad: {
+    color: COLOR.marcaOscura,
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 17,
   },
 });

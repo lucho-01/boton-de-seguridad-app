@@ -1,13 +1,14 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { Icono } from "@/components/Icono";
 import { COLOR, RADIO } from "@/components/tema";
 
 /** Texto literal del botón alternativo y de su pista (los usan las pruebas). */
-export const TEXTO_BOTON_ALTERNATIVO = "Armar la alerta con un botón";
-export const ETIQUETA_BOTON_ALTERNATIVO = "Armar la alerta con un botón (mantén presionado)";
+export const TEXTO_BOTON_ALTERNATIVO = "Activar con un toque";
+export const ETIQUETA_BOTON_ALTERNATIVO = "Activar la alerta con un toque";
 export const PISTA_BOTON_ALTERNATIVO =
-  "Alternativa al gesto de mantener presionado: una sola pulsación arma la alerta.";
-export const PISTA_ALTERNATIVA_VISIBLE = "Alternativa accesible al gesto de mantener presionado.";
+  "Alternativa accesible al gesto de mantener presionado. Activa la cuenta de seguridad.";
+export const PISTA_ALTERNATIVA_VISIBLE = "Alternativa accesible";
 interface BotonAlternativoArmadoProps {
   /** Arma la alerta con una sola pulsación (R6). */
   onArmar: () => void;
@@ -18,26 +19,29 @@ interface BotonAlternativoArmadoProps {
 /** Botón equivalente al long press para quien no puede sostener el dedo. */
 export function BotonAlternativoArmado({ onArmar, disponible }: BotonAlternativoArmadoProps) {
   return (
-    <View style={styles.bloque}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={etiquetaAlternativa(disponible)}
-        accessibilityHint={pistaDeDisponibilidad(disponible)}
-        accessibilityState={{ disabled: !disponible }}
-        disabled={!disponible}
-        hitSlop={8}
-        onPress={onArmar}
-        style={estiloBoton(disponible)}
-        testID="boton-armar-alternativo"
-      >
-        <Text allowFontScaling maxFontSizeMultiplier={2} style={estiloTexto(disponible)}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={etiquetaAlternativa(disponible)}
+      accessibilityHint={pistaDeDisponibilidad(disponible)}
+      accessibilityState={{ disabled: !disponible }}
+      disabled={!disponible}
+      onPress={onArmar}
+      style={({ pressed }) => [estiloBoton(disponible), pressed && styles.presionado]}
+      testID="boton-armar-alternativo"
+    >
+      <View style={styles.icono}>
+        <Icono nombre="telefono" tamano={20} color={COLOR.marca} />
+      </View>
+      <View style={styles.textos}>
+        <Text allowFontScaling maxFontSizeMultiplier={1.5} style={estilos.texto}>
           {TEXTO_BOTON_ALTERNATIVO}
         </Text>
-      </Pressable>
-      <Text allowFontScaling maxFontSizeMultiplier={2} style={styles.pista}>
-        {PISTA_ALTERNATIVA_VISIBLE}
-      </Text>
-    </View>
+        <Text allowFontScaling maxFontSizeMultiplier={1.5} style={estilos.pista}>
+          {PISTA_ALTERNATIVA_VISIBLE}
+        </Text>
+      </View>
+      <Icono nombre="flecha" tamano={20} color={COLOR.textoSuave} />
+    </Pressable>
   );
 }
 
@@ -71,52 +75,50 @@ function estiloBoton(disponible: boolean) {
   return [styles.boton, styles.botonApagado];
 }
 
-/** Color del texto según su disponibilidad (sin ternarios). */
-function estiloTexto(disponible: boolean) {
-  if (disponible) {
-    return [styles.texto, styles.textoDisponible];
-  }
-  return [styles.texto, styles.textoApagado];
-}
-
 const styles = StyleSheet.create({
-  bloque: {
-    gap: 6,
-  },
   boton: {
     alignItems: "center",
-    borderRadius: RADIO.md,
-    borderWidth: 1.5,
-    justifyContent: "center",
-    minHeight: 50,
-    minWidth: 48,
-    paddingHorizontal: 16,
-    paddingVertical: 13,
+    borderRadius: RADIO.lg,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+    minHeight: 74,
+    paddingHorizontal: 13,
     width: "100%",
   },
   botonDisponible: {
     backgroundColor: COLOR.superficie,
-    borderColor: COLOR.marca,
+    borderColor: "#D8E6FF",
   },
   botonApagado: {
-    backgroundColor: "#E7EBF0",
-    borderColor: "#D3DAE3",
+    backgroundColor: COLOR.superficieAlterna,
+    borderColor: COLOR.borde,
   },
+  icono: {
+    alignItems: "center",
+    backgroundColor: COLOR.marcaSuave,
+    borderRadius: RADIO.sm,
+    height: 40,
+    justifyContent: "center",
+    width: 40,
+  },
+  textos: {
+    flex: 1,
+    gap: 2,
+  },
+  presionado: {
+    opacity: 0.78,
+  },
+});
+
+const estilos = StyleSheet.create({
   texto: {
-    fontSize: 16,
+    color: COLOR.texto,
+    fontSize: 15,
     fontWeight: "700",
-    textAlign: "center",
-  },
-  textoDisponible: {
-    color: COLOR.marca,
-  },
-  textoApagado: {
-    color: "#6B7684",
   },
   pista: {
     color: COLOR.textoSuave,
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: "center",
+    fontSize: 12,
   },
 });

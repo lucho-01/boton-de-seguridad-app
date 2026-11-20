@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { Boton } from "@/components/Boton";
 import { EstadoInfo, type TonoEstado } from "@/components/EstadoInfo";
+import { COLOR } from "@/components/tema";
 
 export type EstadoApi = "sin_comprobar" | "conectado" | "sin_conexion" | "error";
 
@@ -62,8 +63,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   etiqueta: {
-    color: "#11181C",
-    fontSize: 18,
-    fontWeight: "600",
+    color: COLOR.texto,
+    fontSize: 14,
+    fontWeight: "700",
   },
 });

@@ -138,18 +138,26 @@ La app **no incluye** `firebaseConfig` ni ninguna clave de Firebase. La API inic
 
 | Método y ruta | Comportamiento |
 |---|---|
-| `GET /api/<recurso>?since=<ISO>` | `200 { items:[{ id, …campos, created_at, updated_at, deleted_at }], servidor_ahora }`. Máx. 500 por llamada: repetir con el último `updated_at` hasta recibir menos de 500. Incluye los borrados lógicos. |
+| `GET /api/<recurso>?since=<ISO>[&after_id=<id>]` | `200 { items:[{ id, …campos, created_at, updated_at, deleted_at }], servidor_ahora }`. Máx. 500, orden ascendente por `(updated_at, id)`. Incluye los borrados lógicos. |
 | `PUT /api/<recurso>/<id>` | Crea o reemplaza (idempotente). Valida con Zod y descarta campos no declarados. `200` con el documento. |
 | `DELETE /api/<recurso>/<id>` | Borrado lógico (`deleted_at`). `200 { ok: true }`; `404` si no existe. |
 
-Estrategia: la app escribe primero en SQLite (`pending = 1`), un servicio envía los pendientes cuando hay conexión y luego pide `?since=` para traer cambios. Conflictos: **gana la última escritura** (`updated_at` del servidor).
+Paginación: la primera llamada devuelve filas con `updated_at > since`. Para
+continuar una página completa, enviar los valores del último elemento:
+`since=updated_at` y `after_id=id`. La API devuelve `updated_at > since` o,
+cuando el timestamp coincide, `id > after_id`. El orden ascendente por
+`(updated_at, id)` evita omitir filas con el mismo timestamp.
+
+Estrategia: la app escribe primero en SQLite (`pending = 1`), un servicio envía
+los pendientes cuando hay conexión y luego pide `?since=` para traer cambios.
+Conflictos: **gana la última escritura** (`updated_at` del servidor).
 Formato de error siempre `{ "error": "mensaje", "detalles"?: [{ "campo", "mensaje" }] }` con códigos 400/401/403/404/409/413/415/429; los errores internos responden `500 Error interno` sin detalles.
 
 ### 9.4 Datos de este proyecto en Firestore
 
 ```text
 usuarios/{uid}/contacto_confianza/{id}
-  nombre: string · telefono: string (10 dígitos) · parentesco: string|null
+  nombre: string · telefono: string (10 dígitos) · parentesco: string|null · principal: 0|1
 usuarios/{uid}/alerta/{id}
   lat: number|null · lng: number|null · precision_m: number|null · bateria_pct: integer|null
   estado: "cancelada"|"mensaje_preparado" · creada_en: ISO

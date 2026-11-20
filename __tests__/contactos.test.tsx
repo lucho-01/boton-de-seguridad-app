@@ -8,6 +8,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import type { ReactElement } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import PantallaContacto from "../app/contacto";
 import PantallaContactos from "../app/(tabs)/contactos";
@@ -43,6 +44,11 @@ const contactoEjemplo = {
   principal: 0,
 };
 
+const METRICAS_SEGURAS = {
+  frame: { x: 0, y: 0, width: 430, height: 932 },
+  insets: { top: 0, right: 0, bottom: 0, left: 0 },
+};
+
 function controladorFalso(sobreescritos: Partial<ContactosController> = {}): ContactosController {
   return {
     contactos: [],
@@ -74,7 +80,11 @@ const mockObtenerContacto = (ctl: ContactosController) => jest.mocked(ctl.obtene
  * aquí se añade el mismo contenedor para que el render sea fiel.
  */
 function renderConGestos(ui: ReactElement) {
-  return render(<GestureHandlerRootView style={{ flex: 1 }}>{ui}</GestureHandlerRootView>);
+  return render(
+    <SafeAreaProvider initialMetrics={METRICAS_SEGURAS}>
+      <GestureHandlerRootView style={{ flex: 1 }}>{ui}</GestureHandlerRootView>
+    </SafeAreaProvider>,
+  );
 }
 
 /** Variables capturadas dentro del factory de jest.mock para expo-router. */
@@ -102,9 +112,13 @@ describe("PantallaContactos", () => {
     await renderConGestos(<PantallaContactos controlador={ctl} />);
 
     expect(screen.getByText(TEXTO_SIN_CONTACTOS)).toBeOnTheScreen();
-    const botonesAgregar = screen.getAllByText(TEXTO_AGREGAR_CONTACTO);
-    expect(botonesAgregar).toHaveLength(2);
-    expect(screen.getAllByLabelText("Añadir un contacto de confianza")).toHaveLength(2);
+    expect(screen.getByText(TEXTO_AGREGAR_CONTACTO)).toBeOnTheScreen();
+    expect(screen.getAllByLabelText("Añadir un contacto de confianza")).toHaveLength(1);
+    expect(
+      screen.getByText(
+        "Tus datos se guardan de forma privada y se sincronizan solo con tu cuenta.",
+      ),
+    ).toBeOnTheScreen();
   });
 
   it("muestra lista de contactos con botones editar y eliminar", async () => {
@@ -115,8 +129,8 @@ describe("PantallaContactos", () => {
 
     expect(screen.getByText("Ana Gómez")).toBeOnTheScreen();
     expect(screen.getByText("3001112233")).toBeOnTheScreen();
-    expect(screen.getByLabelText(ETIQUETA_EDITAR)).toBeOnTheScreen();
-    expect(screen.getByLabelText(ETIQUETA_ELIMINAR)).toBeOnTheScreen();
+    expect(screen.getByLabelText(`${ETIQUETA_EDITAR}: Ana Gómez`)).toBeOnTheScreen();
+    expect(screen.getByLabelText(`${ETIQUETA_ELIMINAR}: Ana Gómez`)).toBeOnTheScreen();
   });
 
   it("muestra aviso del controlador", async () => {
@@ -143,7 +157,7 @@ describe("PantallaContactos", () => {
     await renderConGestos(<PantallaContactos controlador={ctl} />);
 
     await act(async () => {
-      await fireEvent.press(screen.getByLabelText(ETIQUETA_EDITAR));
+      await fireEvent.press(screen.getByLabelText(`${ETIQUETA_EDITAR}: Ana Gómez`));
     });
 
     expect(mockPushVar).toHaveBeenCalledWith("/contacto?id=c1");
@@ -154,7 +168,7 @@ describe("PantallaContactos", () => {
     await renderConGestos(<PantallaContactos controlador={ctl} />);
 
     await act(async () => {
-      await fireEvent.press(screen.getByLabelText(ETIQUETA_ELIMINAR));
+      await fireEvent.press(screen.getByLabelText(`${ETIQUETA_ELIMINAR}: Ana Gómez`));
     });
 
     expect(screen.getByText('¿Eliminar el contacto "Ana Gómez"?')).toBeOnTheScreen();
@@ -167,7 +181,7 @@ describe("PantallaContactos", () => {
     await renderConGestos(<PantallaContactos controlador={ctl} />);
 
     await act(async () => {
-      await fireEvent.press(screen.getByLabelText(ETIQUETA_ELIMINAR));
+      await fireEvent.press(screen.getByLabelText(`${ETIQUETA_ELIMINAR}: Ana Gómez`));
     });
     await act(async () => {
       await fireEvent.press(screen.getByLabelText("Confirmar eliminación del contacto"));
@@ -181,7 +195,7 @@ describe("PantallaContactos", () => {
     await renderConGestos(<PantallaContactos controlador={ctl} />);
 
     await act(async () => {
-      await fireEvent.press(screen.getByLabelText(ETIQUETA_ELIMINAR));
+      await fireEvent.press(screen.getByLabelText(`${ETIQUETA_ELIMINAR}: Ana Gómez`));
     });
     await act(async () => {
       await fireEvent.press(screen.getByLabelText("Cancelar eliminación"));

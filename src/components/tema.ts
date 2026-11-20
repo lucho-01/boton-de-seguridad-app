@@ -9,25 +9,25 @@ import type { ViewStyle } from "react-native";
 
 export const COLOR = {
   /** Fondo general de las pantallas. */
-  fondo: "#F1F4F8",
+  fondo: "#F7F9FC",
   /** Tarjetas y superficies elevadas. */
   superficie: "#FFFFFF",
   /** Superficie alternativa (campos, pistas). */
-  superficieAlterna: "#F7F9FC",
-  borde: "#DCE2EA",
-  bordeFuerte: "#C2CBD6",
-  texto: "#0E1726",
-  textoSuave: "#55606E",
-  marca: "#0B5FFF",
-  marcaSuave: "#E8F0FF",
-  marcaOscura: "#0846BF",
-  peligro: "#C0271C",
-  peligroSuave: "#FCEBE9",
-  exito: "#12703A",
-  exitoSuave: "#E7F5EC",
-  avisoFondo: "#FFF6E8",
-  avisoBorde: "#B45309",
-  avisoTexto: "#6B3A00",
+  superficieAlterna: "#F1F5FA",
+  borde: "#E1E8F0",
+  bordeFuerte: "#CAD5E2",
+  texto: "#101B2D",
+  textoSuave: "#64748B",
+  marca: "#1761D2",
+  marcaSuave: "#EDF4FF",
+  marcaOscura: "#124AA5",
+  peligro: "#D92D2A",
+  peligroSuave: "#FFF1F0",
+  exito: "#008F69",
+  exitoSuave: "#EAFBF5",
+  avisoFondo: "#FFF8EB",
+  avisoBorde: "#F1D7A7",
+  avisoTexto: "#6B4C1E",
   blanco: "#FFFFFF",
 } as const;
 
@@ -41,19 +41,19 @@ export const ESPACIO = {
 } as const;
 
 export const RADIO = {
-  sm: 10,
-  md: 14,
-  lg: 20,
+  sm: 12,
+  md: 18,
+  lg: 26,
   circulo: 999,
 } as const;
 
 /** Sombra suave y consistente para tarjetas (iOS y Android). */
 export const SOMBRA_TARJETA: ViewStyle = {
   shadowColor: "#0E1726",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.08,
-  shadowRadius: 10,
-  elevation: 2,
+  shadowOffset: { width: 0, height: 5 },
+  shadowOpacity: 0.035,
+  shadowRadius: 18,
+  elevation: 1,
 };
 
 /** Estilo base de una tarjeta: fondo blanco, borde tenue y esquinas suaves. */

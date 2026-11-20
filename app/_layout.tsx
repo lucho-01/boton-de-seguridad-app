@@ -4,6 +4,7 @@ import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { COLOR } from "@/components/tema";
 import { SesionProvider } from "@/controllers/sesionContext";
 
 /** Raíz de la app: gestos, áreas seguras, sesión y navegación en pila. */
@@ -15,7 +16,16 @@ export default function RootLayout() {
           <StatusBar style="dark" />
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="ajustes" options={{ title: "Ajustes" }} />
+            <Stack.Screen
+              name="ajustes"
+              options={{
+                title: "",
+                headerBackTitle: "Volver",
+                headerShadowVisible: false,
+                headerStyle: { backgroundColor: COLOR.fondo },
+                headerTintColor: COLOR.marca,
+              }}
+            />
             <Stack.Screen name="registro" options={{ title: "Crear cuenta" }} />
             <Stack.Screen name="login" options={{ title: "Ingresar" }} />
           </Stack>

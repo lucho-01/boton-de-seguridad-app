@@ -13,6 +13,7 @@
 
 import { act, render, screen } from "@testing-library/react-native";
 import * as Battery from "expo-battery";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 jest.mock("expo-battery", () => ({
   __esModule: true,
@@ -57,6 +58,11 @@ import PantallaAlerta from "../app/(tabs)/index";
 
 const mockGetBatteryLevel = jest.mocked(Battery.getBatteryLevelAsync);
 
+const METRICAS_SEGURAS = {
+  frame: { x: 0, y: 0, width: 430, height: 932 },
+  insets: { top: 0, right: 0, bottom: 0, left: 0 },
+};
+
 type ControladorFalso = {
   estado: string;
   progreso: number;
@@ -86,7 +92,11 @@ function construirControlador(sobreescritos: Partial<ControladorFalso> = {}): Co
 
 async function abrirPantalla(ctl: ControladorFalso): Promise<void> {
   mockUseArmadoController.mockReturnValue(ctl);
-  await render(<PantallaAlerta />);
+  await render(
+    <SafeAreaProvider initialMetrics={METRICAS_SEGURAS}>
+      <PantallaAlerta />
+    </SafeAreaProvider>,
+  );
   await act(async () => {});
 }
 

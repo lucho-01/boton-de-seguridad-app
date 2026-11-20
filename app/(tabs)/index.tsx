@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, View, type ViewStyle } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { BotonAlternativoArmado } from "@/components/BotonAlternativoArmado";
-import { Boton } from "@/components/Boton";
 import { BotonSos } from "@/components/BotonSos";
 import { ContenidoArmado } from "@/components/ContenidoArmado";
 import { CuentaRegresiva } from "@/components/CuentaRegresiva";
+import { Icono, type NombreIcono } from "@/components/Icono";
 import { PantallaConAviso } from "@/components/PantallaConAviso";
 import { Parrafo } from "@/components/Parrafo";
 import { TituloPantalla } from "@/components/TituloPantalla";
@@ -163,49 +163,37 @@ export default function PantallaAlerta() {
 
   return (
     <PantallaConAviso conBarraDePestanas>
-      <TituloPantalla>Botón de seguridad</TituloPantalla>
-      <BotonSos estado={estado} progreso={progreso} onIniciar={iniciar} onCancelar={alSoltar} />
+      <View style={styles.introduccion}>
+        <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.eyebrow}>
+          PROTECCIÓN ACTIVA
+        </Text>
+        <TituloPantalla>Estamos contigo</TituloPantalla>
+        <Parrafo>
+          Si estás en riesgo, mantén pulsado el botón. Avisaremos a tu contacto principal.
+        </Parrafo>
+      </View>
+      <View style={styles.tarjetaSos}>
+        <BotonSos estado={estado} progreso={progreso} onIniciar={iniciar} onCancelar={alSoltar} />
+      </View>
       {cuentaDeEstado(estado, restanteSegundos, cancelar)}
       <BotonAlternativoArmado onArmar={armarConBoton} disponible={estado === "idle"} />
-      <Boton
-        texto="Iniciar con sacudida"
-        etiquetaAccesible="Iniciar cuenta con sacudida"
-        pistaAccesible="Inicia la cuenta de 5 s con un movimiento de sacudida triple"
-        onPress={iniciar}
-        deshabilitado={estado !== "idle"}
-        variante="secundario"
-      />
       <PanelSensores
         disponibleSacudida={disponibleSacudida}
         disponibleUbicacion={disponibleUbicacion}
       />
-      <ContenidoArmado
-        estado={estado}
-        onVolverAlInicio={volverAlInicio}
-        ubicacion={ubicacion}
-        ubicacionFallida={ubicacionFallida}
-        sms={sms}
-      />
+      {estado !== "idle" && (
+        <ContenidoArmado
+          estado={estado}
+          onVolverAlInicio={volverAlInicio}
+          ubicacion={ubicacion}
+          ubicacionFallida={ubicacionFallida}
+          sms={sms}
+        />
+      )}
       {avisoRegistro !== null && <Parrafo>{avisoRegistro}</Parrafo>}
       {bloqueBateria(estado, bateria.porcentaje)}
     </PantallaConAviso>
   );
-}
-
-/** Texto del indicador de estado del sensor de sacudida (sin ternarios). */
-function textoEstadoSacudida(disponible: boolean): string {
-  if (disponible) {
-    return "Sacudida: disponible";
-  }
-  return "Sacudida: no disponible";
-}
-
-/** Texto del indicador de estado del sensor de ubicación (sin ternarios). */
-function textoEstadoUbicacion(disponible: boolean): string {
-  if (disponible) {
-    return "Ubicación: disponible";
-  }
-  return "Ubicación: no disponible";
 }
 
 /** Tarjeta con el estado de los sensores que usa la pantalla. */
@@ -218,44 +206,103 @@ function PanelSensores({
 }) {
   return (
     <View style={styles.tarjetaEstado}>
-      <IndicadorEstado
+      <FilaEstado
         disponible={disponibleSacudida}
-        glifo="🤳"
-        texto={textoEstadoSacudida(disponibleSacudida)}
+        nombreIcono="sacudida"
+        titulo="Detección por sacudida"
+        detalle={textoDisponibilidad(disponibleSacudida)}
       />
       <View style={styles.separador} />
-      <IndicadorEstado
+      <FilaEstado
         disponible={disponibleUbicacion}
-        glifo="📍"
-        texto={textoEstadoUbicacion(disponibleUbicacion)}
+        nombreIcono="ubicacion"
+        titulo="Ubicación"
+        detalle={textoUbicacion(disponibleUbicacion)}
       />
     </View>
   );
 }
 
-/** Fila de estado de un sensor: punto de color, icono y texto. */
-function IndicadorEstado({
+function textoDisponibilidad(disponible: boolean): string {
+  if (disponible) {
+    return "Disponible en este dispositivo";
+  }
+  return "No disponible en este dispositivo";
+}
+
+function textoUbicacion(disponible: boolean): string {
+  if (disponible) {
+    return "Precisión alta activada";
+  }
+  return "Ubicación no disponible";
+}
+
+function estadoDeSensor(disponible: boolean): string {
+  if (disponible) {
+    return "Listo";
+  }
+  return "No disponible";
+}
+
+function iconoDeSensor(disponible: boolean): string {
+  if (disponible) {
+    return COLOR.exito;
+  }
+  return COLOR.textoSuave;
+}
+
+function estiloIconoEstado(disponible: boolean) {
+  if (disponible) {
+    return [styles.iconoEstado, styles.iconoDisponible];
+  }
+  return [styles.iconoEstado, styles.iconoInactivo];
+}
+
+function estiloPuntoEstado(disponible: boolean) {
+  if (disponible) {
+    return [styles.punto, styles.puntoActivo];
+  }
+  return [styles.punto, styles.puntoInactivo];
+}
+
+function estiloTextoEstado(disponible: boolean) {
+  if (disponible) {
+    return styles.textoListo;
+  }
+  return [styles.textoListo, styles.textoInactivo];
+}
+
+/** Fila accesible con icono, detalle y estado del sensor. */
+function FilaEstado({
   disponible,
-  glifo,
-  texto,
+  nombreIcono,
+  titulo,
+  detalle,
 }: {
   disponible: boolean;
-  glifo: string;
-  texto: string;
+  nombreIcono: NombreIcono;
+  titulo: string;
+  detalle: string;
 }) {
-  let estiloPunto: ViewStyle = styles.puntoInactivo;
-  if (disponible) {
-    estiloPunto = styles.puntoActivo;
-  }
   return (
-    <View style={styles.indicador}>
-      <Text allowFontScaling={false} style={styles.glifoIndicador}>
-        {glifo}
-      </Text>
-      <Text allowFontScaling maxFontSizeMultiplier={1.6} style={styles.textoIndicador}>
-        {texto}
-      </Text>
-      <View style={[styles.punto, estiloPunto]} />
+    <View accessibilityRole="summary" style={styles.filaEstado}>
+      <View style={estiloIconoEstado(disponible)}>
+        <Icono nombre={nombreIcono} tamano={20} color={iconoDeSensor(disponible)} />
+      </View>
+      <View style={styles.textoEstado}>
+        <Text allowFontScaling maxFontSizeMultiplier={1.5} style={styles.tituloSensor}>
+          {titulo}
+        </Text>
+        <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.detalleSensor}>
+          {detalle}
+        </Text>
+      </View>
+      <View style={styles.estadoListo}>
+        <View style={estiloPuntoEstado(disponible)} />
+        <Text allowFontScaling maxFontSizeMultiplier={1.3} style={estiloTextoEstado(disponible)}>
+          {estadoDeSensor(disponible)}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -295,33 +342,92 @@ function textoBateria(nivel: number): string {
 }
 
 const styles = StyleSheet.create({
+  introduccion: {
+    gap: ESPACIO.xs,
+  },
+  eyebrow: {
+    color: COLOR.marca,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1.8,
+  },
+  tarjetaSos: {
+    alignItems: "center",
+    backgroundColor: COLOR.superficie,
+    borderColor: "#F9DEDC",
+    borderRadius: 28,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 326,
+    paddingHorizontal: ESPACIO.md,
+    paddingVertical: ESPACIO.md,
+    shadowColor: COLOR.peligro,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.045,
+    shadowRadius: 20,
+  },
   tarjetaEstado: {
     backgroundColor: COLOR.superficie,
     borderColor: COLOR.borde,
-    borderRadius: RADIO.md,
+    borderRadius: RADIO.lg,
     borderWidth: 1,
     paddingHorizontal: ESPACIO.lg,
     paddingVertical: ESPACIO.sm,
+    shadowColor: "#0E1726",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.035,
+    shadowRadius: 16,
   },
-  indicador: {
+  filaEstado: {
     alignItems: "center",
     flexDirection: "row",
-    gap: ESPACIO.sm,
-    minHeight: 40,
+    gap: ESPACIO.md,
+    minHeight: 60,
   },
-  glifoIndicador: {
-    fontSize: 16,
+  iconoEstado: {
+    alignItems: "center",
+    borderRadius: RADIO.sm,
+    height: 40,
+    justifyContent: "center",
+    width: 40,
   },
-  textoIndicador: {
-    color: COLOR.texto,
+  iconoDisponible: {
+    backgroundColor: COLOR.exitoSuave,
+  },
+  iconoInactivo: {
+    backgroundColor: COLOR.superficieAlterna,
+  },
+  textoEstado: {
     flex: 1,
-    fontSize: 15,
-    fontWeight: "500",
+    gap: 2,
+  },
+  tituloSensor: {
+    color: COLOR.texto,
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  detalleSensor: {
+    color: COLOR.textoSuave,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  estadoListo: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 5,
+  },
+  textoListo: {
+    color: COLOR.exito,
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  textoInactivo: {
+    color: COLOR.textoSuave,
   },
   punto: {
     borderRadius: RADIO.circulo,
-    height: 10,
-    width: 10,
+    height: 7,
+    width: 7,
   },
   puntoActivo: {
     backgroundColor: COLOR.exito,
@@ -332,7 +438,7 @@ const styles = StyleSheet.create({
   separador: {
     backgroundColor: COLOR.borde,
     height: 1,
-    marginVertical: ESPACIO.xs,
+    marginLeft: 52,
   },
   insigniaBateria: {
     alignSelf: "center",

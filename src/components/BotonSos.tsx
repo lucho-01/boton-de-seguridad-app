@@ -6,13 +6,15 @@ import {
 } from "react-native-gesture-handler";
 
 import { AnilloProgreso } from "@/components/AnilloProgreso";
+import { Icono } from "@/components/Icono";
+import { COLOR } from "@/components/tema";
 import type { EstadoArmado } from "@/controllers";
 
 /** Etiquetas literales del botón SOS (las usan las pruebas de render). */
 export const ETIQUETA_BOTON_SOS = "Botón SOS, mantén presionado 3 segundos para armar la alerta";
 /** Pista en reposo: el botón alternativo sigue disponible. */
 export const PISTA_BOTON_SOS =
-  "Si no puedes mantener presionado, usa el botón «Armar la alerta con un botón».";
+  "Si no puedes mantener presionado, usa el botón «Activar con un toque».";
 /** Pista durante el armado: la salida es el doble toque sobre el mismo botón. */
 export const PISTA_SOS_ARMANDO = "Toca dos veces para cancelar el armado.";
 /** Pista durante la cuenta: la salida es el botón «Cancelar la alerta». */
@@ -20,7 +22,7 @@ export const PISTA_SOS_CUENTA = "Usa el botón «Cancelar la alerta» para deten
 /** Pista con la alerta lista: la salida es el botón «Volver al inicio». */
 export const PISTA_SOS_LISTA = "Usa el botón «Volver al inicio» para volver al reposo.";
 /** Texto permanente bajo el botón, en cualquier estado. */
-export const TEXTO_PROGRESO_SOS = "Mantén presionado: 0 %";
+export const TEXTO_PROGRESO_SOS = "Mantén pulsado para activar";
 /** Ayuda visible durante la cuenta: los segundos los muestra la cuenta regresiva. */
 export const TEXTO_AYUDA_CUENTA = "Usa «Cancelar la alerta» para detener la cuenta.";
 /** Ayuda visible con la alerta lista. */
@@ -43,10 +45,10 @@ interface Apariencia {
 }
 
 const APARIENCIAS: Record<EstadoArmado, Apariencia> = {
-  idle: { fondo: "#B3261E", borde: "#8C1D18", leyenda: "Mantén presionado" },
-  arming: { fondo: "#D93A31", borde: "#B3261E", leyenda: "Mantén presionado" },
-  countdown: { fondo: "#D93A31", borde: "#B3261E", leyenda: "Cuenta regresiva" },
-  lista: { fondo: "#1B7F3B", borde: "#134A24", leyenda: "Alerta lista" },
+  idle: { fondo: "#D92D2A", borde: "#C42124", leyenda: "Mantén pulsado" },
+  arming: { fondo: "#D92D2A", borde: "#B91C22", leyenda: "Mantén pulsado" },
+  countdown: { fondo: "#D92D2A", borde: "#B91C22", leyenda: "Cuenta regresiva" },
+  lista: { fondo: "#008F69", borde: "#007653", leyenda: "Alerta lista" },
 };
 
 const COLOR_TEXTO = "#FFFFFF";
@@ -135,13 +137,20 @@ export function BotonSos({ estado, progreso, onIniciar, onCancelar }: BotonSosPr
             testID="boton-sos"
             style={styles.zonaTactil}
           >
-            <AnilloProgreso activo={activo} color={apariencia.borde} colorPista="#F3D6D3" />
+            <AnilloProgreso
+              activo={activo}
+              color={apariencia.borde}
+              colorPista="#F7D8D6"
+              tamano={220}
+              grosor={8}
+            />
             <View
               style={[
                 styles.circulo,
                 { backgroundColor: apariencia.fondo, borderColor: apariencia.borde },
               ]}
             >
+              <Icono nombre="escudo" tamano={28} color={COLOR.blanco} grosor={2} />
               <Text allowFontScaling maxFontSizeMultiplier={1.6} style={styles.titulo}>
                 SOS
               </Text>
@@ -208,18 +217,18 @@ function pistaDeEstado(estado: EstadoArmado): string {
  */
 function textoDeProgreso(estado: EstadoArmado, porcentaje: number): string {
   if (estado === "arming") {
-    return `Mantén presionado: ${porcentaje} %`;
+    return `Suelta para cancelar · ${porcentaje}%`;
   }
   if (estado === "countdown") {
     return TEXTO_AYUDA_CUENTA;
   }
   if (estado === "lista") {
-    return TEXTO_AYUDA_LISTA;
+    return "Alerta preparada";
   }
   return TEXTO_PROGRESO_SOS;
 }
 
-const LADO_CIRCULO = 220;
+const LADO_CIRCULO = 196;
 
 const styles = StyleSheet.create({
   raiz: {
@@ -227,47 +236,46 @@ const styles = StyleSheet.create({
   },
   bloque: {
     alignItems: "center",
-    alignSelf: "center",
-    gap: 14,
+    gap: 4,
   },
   zonaTactil: {
     alignItems: "center",
-    height: 268,
+    height: 232,
     justifyContent: "center",
-    width: 268,
+    width: 232,
   },
   circulo: {
     alignItems: "center",
     borderRadius: LADO_CIRCULO / 2,
-    borderWidth: 3,
-    elevation: 6,
+    borderWidth: 2,
+    elevation: 4,
+    gap: 4,
     height: LADO_CIRCULO,
     justifyContent: "center",
-    shadowColor: "#0E1726",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
+    shadowColor: "#D92D2A",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
     width: LADO_CIRCULO,
   },
   titulo: {
     color: COLOR_TEXTO,
-    fontSize: 60,
+    fontSize: 32,
     fontWeight: "900",
-    letterSpacing: 3,
+    letterSpacing: 0.2,
   },
   leyenda: {
     color: COLOR_TEXTO,
-    fontSize: 15,
+    fontSize: 12,
     fontWeight: "600",
-    letterSpacing: 0.3,
-    marginTop: 2,
+    marginTop: 1,
     opacity: 0.95,
     textAlign: "center",
   },
   progresoTexto: {
-    color: "#3B4654",
-    fontSize: 15,
-    lineHeight: 22,
+    color: COLOR.textoSuave,
+    fontSize: 13,
+    lineHeight: 19,
     textAlign: "center",
   },
 });

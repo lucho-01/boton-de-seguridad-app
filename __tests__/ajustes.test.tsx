@@ -7,6 +7,7 @@
  */
 
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { SesionProvider } from "@/controllers/sesionContext";
 import PantallaAjustes from "../app/ajustes";
@@ -17,6 +18,11 @@ const MENSAJE_POR_DEFECTO =
   "Alerta de seguridad: necesito ayuda. Mi ubicación es [enlace de mapa].";
 const MENSAJE_LARGO = "x".repeat(161);
 const ERROR_LARGO = "El mensaje base no puede superar los 160 caracteres.";
+
+const METRICAS_SEGURAS = {
+  frame: { x: 0, y: 0, width: 430, height: 932 },
+  insets: { top: 0, right: 0, bottom: 0, left: 0 },
+};
 
 function controladorFalso(sobreescritos: Partial<AjustesController> = {}): AjustesController {
   return {
@@ -41,9 +47,11 @@ function controladorFalso(sobreescritos: Partial<AjustesController> = {}): Ajust
 async function renderPantalla(ctl: AjustesController) {
   await act(async () => {
     render(
-      <SesionProvider>
-        <PantallaAjustes controlador={ctl} />
-      </SesionProvider>,
+      <SafeAreaProvider initialMetrics={METRICAS_SEGURAS}>
+        <SesionProvider>
+          <PantallaAjustes controlador={ctl} />
+        </SesionProvider>
+      </SafeAreaProvider>,
     );
   });
 }
@@ -72,7 +80,7 @@ describe("PantallaAjustes", () => {
     await renderPantalla(ctl);
 
     expect(screen.getByText(/Sensibilidad de la sacudida/)).toBeOnTheScreen();
-    expect(screen.getByText(/Mensaje base del SMS/)).toBeOnTheScreen();
+    expect(screen.getByText("Mensaje de emergencia")).toBeOnTheScreen();
   });
 
   it("muestra el mensaje base por defecto en el campo", async () => {

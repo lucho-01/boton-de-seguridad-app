@@ -7,11 +7,16 @@
 
 import { render, screen } from "@testing-library/react-native";
 import { Text } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AvisoLinea123, TEXTO_AVISO_123 } from "@/components/AvisoLinea123";
 import { PantallaConAviso } from "@/components/PantallaConAviso";
 
 const TEXTO_DE_LA_SPEC = "Este proyecto es educativo y no reemplaza la línea de emergencias 123.";
+const METRICAS_SEGURAS = {
+  frame: { x: 0, y: 0, width: 430, height: 932 },
+  insets: { top: 0, right: 0, bottom: 0, left: 0 },
+};
 
 describe("AvisoLinea123 · R7", () => {
   it("el texto es exactamente el de la spec", () => {
@@ -39,9 +44,11 @@ describe("AvisoLinea123 · R7", () => {
 describe("PantallaConAviso · R7", () => {
   it("incluye el aviso con su contenido", async () => {
     await render(
-      <PantallaConAviso>
-        <Text>Contenido de prueba</Text>
-      </PantallaConAviso>,
+      <SafeAreaProvider initialMetrics={METRICAS_SEGURAS}>
+        <PantallaConAviso>
+          <Text>Contenido de prueba</Text>
+        </PantallaConAviso>
+      </SafeAreaProvider>,
     );
 
     expect(screen.getByText(TEXTO_AVISO_123)).toBeOnTheScreen();
@@ -50,9 +57,11 @@ describe("PantallaConAviso · R7", () => {
 
   it("con barra de pestañas el aviso sigue presente", async () => {
     await render(
-      <PantallaConAviso conBarraDePestanas>
-        <Text>Contenido con pestañas</Text>
-      </PantallaConAviso>,
+      <SafeAreaProvider initialMetrics={METRICAS_SEGURAS}>
+        <PantallaConAviso conBarraDePestanas>
+          <Text>Contenido con pestañas</Text>
+        </PantallaConAviso>
+      </SafeAreaProvider>,
     );
 
     expect(screen.getByText(TEXTO_AVISO_123)).toBeOnTheScreen();

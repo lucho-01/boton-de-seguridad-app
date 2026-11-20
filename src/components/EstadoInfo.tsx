@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { COLOR } from "@/components/tema";
 
 export type TonoEstado = "neutral" | "positivo" | "negativo" | "atencion";
 
@@ -12,10 +13,30 @@ interface EstadoInfoProps {
 }
 
 const COLORS: Record<TonoEstado, { punto: string; fondo: string; borde: string; texto: string }> = {
-  neutral: { punto: "#5A6570", fondo: "#F1F3F5", borde: "#C6CBD1", texto: "#1F2933" },
-  positivo: { punto: "#1B7F3B", fondo: "#EAF7EE", borde: "#1B7F3B", texto: "#134A24" },
-  negativo: { punto: "#B3261E", fondo: "#FDECEA", borde: "#B3261E", texto: "#6B1410" },
-  atencion: { punto: "#8A4B00", fondo: "#FFF4E5", borde: "#8A4B00", texto: "#4A2A00" },
+  neutral: {
+    punto: COLOR.textoSuave,
+    fondo: COLOR.superficieAlterna,
+    borde: COLOR.borde,
+    texto: COLOR.texto,
+  },
+  positivo: {
+    punto: COLOR.exito,
+    fondo: COLOR.exitoSuave,
+    borde: COLOR.exitoSuave,
+    texto: COLOR.exito,
+  },
+  negativo: {
+    punto: COLOR.peligro,
+    fondo: COLOR.peligroSuave,
+    borde: COLOR.peligroSuave,
+    texto: COLOR.peligro,
+  },
+  atencion: {
+    punto: "#A66D13",
+    fondo: COLOR.avisoFondo,
+    borde: COLOR.avisoBorde,
+    texto: COLOR.avisoTexto,
+  },
 };
 
 /** Fila con un punto de color y un mensaje: estado de la API o de la sesión. */
@@ -42,22 +63,22 @@ export function EstadoInfo({ mensaje, tono = "neutral", etiquetaAccesible }: Est
 const styles = StyleSheet.create({
   fila: {
     alignItems: "center",
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     flexDirection: "row",
     gap: 10,
     minHeight: 44,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 11,
+    paddingVertical: 8,
   },
   punto: {
     borderRadius: 7,
-    height: 14,
-    width: 14,
+    height: 8,
+    width: 8,
   },
   texto: {
     flex: 1,
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 14,
+    lineHeight: 20,
   },
 });

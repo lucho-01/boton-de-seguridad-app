@@ -9,6 +9,7 @@
 
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import * as Haptics from "expo-haptics";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 jest.mock("expo-haptics", () => ({
   __esModule: true,
@@ -38,13 +39,17 @@ import {
   ContenidoArmado,
   ETIQUETA_VOLVER,
   TEXTO_CUENTA_TERMINADA,
-  TEXTO_REPOSO,
 } from "@/components/ContenidoArmado";
 import { ETIQUETA_CANCELAR } from "@/components/CuentaRegresiva";
+import { TEXTO_PROGRESO_SOS } from "@/components/BotonSos";
 import { MS_ARMADO } from "@/services/armadoSos";
 import { MS_CUENTA } from "@/services/cuentaRegresiva";
 
 const TESTID_ALTERNATIVO = "boton-armar-alternativo";
+const METRICAS_SEGURAS = {
+  frame: { x: 0, y: 0, width: 430, height: 932 },
+  insets: { top: 0, right: 0, bottom: 0, left: 0 },
+};
 
 beforeEach(() => {
   jest.useFakeTimers({
@@ -63,7 +68,11 @@ afterEach(() => {
 async function abrirPantalla(): Promise<
   ReturnType<typeof render> extends Promise<infer V> ? V : never
 > {
-  const vista = await render(<PantallaAlerta />);
+  const vista = await render(
+    <SafeAreaProvider initialMetrics={METRICAS_SEGURAS}>
+      <PantallaAlerta />
+    </SafeAreaProvider>,
+  );
   await act(async () => {});
   return vista;
 }
@@ -92,9 +101,19 @@ describe("Pantalla SOS · R7 el aviso 123 sigue visible", () => {
   it("arranca en reposo con su texto y el botón alternativo", async () => {
     await abrirPantalla();
 
-    expect(screen.getByText(TEXTO_REPOSO)).toBeOnTheScreen();
+    expect(screen.getByText(TEXTO_PROGRESO_SOS)).toBeOnTheScreen();
     expect(screen.getByTestId(TESTID_ALTERNATIVO)).toBeOnTheScreen();
     expect(screen.queryByLabelText(ETIQUETA_CANCELAR)).toBeNull();
+  });
+
+  it("muestra la jerarquía visual y los estados de la referencia", async () => {
+    await abrirPantalla();
+
+    expect(screen.getByText("PROTECCIÓN ACTIVA")).toBeOnTheScreen();
+    expect(screen.getByText("Estamos contigo")).toBeOnTheScreen();
+    expect(screen.getByText("Activar con un toque")).toBeOnTheScreen();
+    expect(screen.getByText("Detección por sacudida")).toBeOnTheScreen();
+    expect(screen.getByText("Ubicación")).toBeOnTheScreen();
   });
 });
 
@@ -129,7 +148,7 @@ describe("Pantalla SOS · alternativa accesible", () => {
     await abrirPantalla();
 
     expect(screen.getByTestId("boton-sos")).toBeOnTheScreen();
-    expect(screen.getByText("Mantén presionado: 0 %")).toBeOnTheScreen();
+    expect(screen.getByText(TEXTO_PROGRESO_SOS)).toBeOnTheScreen();
   });
 });
 
@@ -176,7 +195,7 @@ describe("Pantalla SOS · cuenta regresiva", () => {
 
     await pulsar(screen.getByLabelText(ETIQUETA_VOLVER));
 
-    expect(screen.getByText(TEXTO_REPOSO)).toBeOnTheScreen();
+    expect(screen.getByText(TEXTO_PROGRESO_SOS)).toBeOnTheScreen();
     expect(screen.queryByLabelText(ETIQUETA_VOLVER)).toBeNull();
   });
 });
@@ -188,7 +207,7 @@ describe("Pantalla SOS · cancelar la cuenta", () => {
 
     await pulsar(screen.getByLabelText(ETIQUETA_CANCELAR));
 
-    expect(screen.getByText(TEXTO_REPOSO)).toBeOnTheScreen();
+    expect(screen.getByText(TEXTO_PROGRESO_SOS)).toBeOnTheScreen();
     expect(screen.queryByLabelText(ETIQUETA_CANCELAR)).toBeNull();
   });
 

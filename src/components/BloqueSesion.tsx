@@ -2,6 +2,7 @@ import { Alert, StyleSheet, Text, View } from "react-native";
 
 import { Boton } from "@/components/Boton";
 import { EstadoInfo } from "@/components/EstadoInfo";
+import { COLOR } from "@/components/tema";
 
 interface BloqueSesionProps {
   /** Correo de la sesión activa; `null` cuando no hay nadie autenticado. */
@@ -97,8 +98,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   etiqueta: {
-    color: "#11181C",
-    fontSize: 18,
-    fontWeight: "600",
+    color: COLOR.texto,
+    fontSize: 14,
+    fontWeight: "700",
   },
 });

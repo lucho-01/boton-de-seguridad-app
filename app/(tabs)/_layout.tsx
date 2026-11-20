@@ -1,12 +1,17 @@
 import { Link, Tabs } from "expo-router";
-import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type ColorValue,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Icono, type NombreIcono } from "@/components/Icono";
 import { COLOR, ESPACIO, RADIO } from "@/components/tema";
-
-/** Iconos de las pestañas: emoji del sistema (sin dependencias nuevas). */
-const ICONO_ALERTA = "🚨";
-const ICONO_CONTACTOS = "👥";
-const ICONO_HISTORIAL = "🕘";
 
 function estiloBotonAjustes({ pressed }: { pressed: boolean }): StyleProp<ViewStyle> {
   if (pressed) {
@@ -23,41 +28,42 @@ function BotonAjustes() {
         accessibilityRole="button"
         accessibilityLabel="Abrir ajustes"
         accessibilityHint="Muestra el estado del servidor y de la sesión"
-        hitSlop={8}
+        hitSlop={4}
         style={estiloBotonAjustes}
       >
-        <Text allowFontScaling maxFontSizeMultiplier={2} style={styles.textoAjustes}>
-          Ajustes
-        </Text>
+        <Icono nombre="ajustes" tamano={22} color={COLOR.textoSuave} />
       </Pressable>
     </Link>
   );
 }
 
-/** Estilo del icono según la pestaña activa (sin ternarios). */
-function estiloIcono(activo: boolean) {
-  if (activo) {
-    return [styles.icono, styles.iconoActivo];
-  }
-  return [styles.icono, styles.iconoInactivo];
+function EncabezadoMarca({ titulo }: { titulo: string }) {
+  return (
+    <View style={styles.marcaEncabezado}>
+      <View style={styles.iconoMarca}>
+        <Icono nombre="escudo" tamano={22} color={COLOR.blanco} />
+      </View>
+      <View style={styles.textosEncabezado}>
+        <Text allowFontScaling maxFontSizeMultiplier={1.3} style={styles.tituloEncabezado}>
+          {titulo}
+        </Text>
+        <Text allowFontScaling maxFontSizeMultiplier={1.3} style={styles.subtituloEncabezado}>
+          Protección personal
+        </Text>
+      </View>
+    </View>
+  );
 }
 
-/** Icono de pestaña: decorativo, el nombre accesible va en `tabBarLabel`. */
-function IconoPestana({ glifo, activo }: { glifo: string; activo: boolean }) {
-  return (
-    <Text
-      accessibilityElementsHidden
-      allowFontScaling={false}
-      importantForAccessibility="no-hide-descendants"
-      style={estiloIcono(activo)}
-    >
-      {glifo}
-    </Text>
-  );
+/** Icono SVG decorativo; el nombre accesible va en `tabBarLabel`. */
+function IconoPestana({ nombre, color }: { nombre: NombreIcono; color: ColorValue }) {
+  return <Icono nombre={nombre} tamano={22} color={color} grosor={1.9} />;
 }
 
 /** Pestañas del producto: alerta, contactos e historial, con acceso a ajustes. */
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+  const espacioSeguro = Math.max(9, insets.bottom);
   return (
     <Tabs
       screenOptions={{
@@ -65,11 +71,15 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: COLOR.textoSuave,
         tabBarLabelStyle: styles.etiquetaPestana,
         tabBarAllowFontScaling: true,
-        tabBarStyle: styles.barraPestanas,
+        tabBarStyle: [
+          styles.barraPestanas,
+          { height: 52 + espacioSeguro, paddingBottom: espacioSeguro },
+        ],
         tabBarItemStyle: styles.itemPestana,
         sceneStyle: styles.escena,
         headerStyle: styles.encabezado,
-        headerTitleStyle: styles.tituloEncabezado,
+        headerTitleAlign: "left",
+        headerTitle: () => <EncabezadoMarca titulo="Alerta" />,
         headerShadowVisible: false,
         headerRight: BotonAjustes,
         headerRightContainerStyle: styles.zonaBotonHeader,
@@ -81,7 +91,7 @@ export default function TabsLayout() {
           title: "Alerta",
           tabBarLabel: "Alerta",
           tabBarAccessibilityLabel: "Alerta",
-          tabBarIcon: ({ focused }) => <IconoPestana activo={focused} glifo={ICONO_ALERTA} />,
+          tabBarIcon: ({ color }) => <IconoPestana color={color} nombre="alerta" />,
         }}
       />
       <Tabs.Screen
@@ -90,7 +100,7 @@ export default function TabsLayout() {
           title: "Contactos",
           tabBarLabel: "Contactos",
           tabBarAccessibilityLabel: "Contactos",
-          tabBarIcon: ({ focused }) => <IconoPestana activo={focused} glifo={ICONO_CONTACTOS} />,
+          tabBarIcon: ({ color }) => <IconoPestana color={color} nombre="contactos" />,
         }}
       />
       <Tabs.Screen
@@ -99,7 +109,7 @@ export default function TabsLayout() {
           title: "Historial",
           tabBarLabel: "Historial",
           tabBarAccessibilityLabel: "Historial",
-          tabBarIcon: ({ focused }) => <IconoPestana activo={focused} glifo={ICONO_HISTORIAL} />,
+          tabBarIcon: ({ color }) => <IconoPestana color={color} nombre="historial" />,
         }}
       />
     </Tabs>
@@ -112,28 +122,43 @@ const styles = StyleSheet.create({
   },
   encabezado: {
     backgroundColor: COLOR.fondo,
+    height: 62,
+  },
+  marcaEncabezado: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: ESPACIO.md,
+  },
+  iconoMarca: {
+    alignItems: "center",
+    backgroundColor: COLOR.marca,
+    borderRadius: RADIO.md,
+    elevation: 3,
+    height: 42,
+    justifyContent: "center",
+    shadowColor: COLOR.marca,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    width: 42,
+  },
+  textosEncabezado: {
+    gap: 1,
   },
   tituloEncabezado: {
     color: COLOR.texto,
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "700",
+  },
+  subtituloEncabezado: {
+    color: COLOR.textoSuave,
+    fontSize: 11,
   },
   botonAjustes: {
     alignItems: "center",
-    backgroundColor: COLOR.superficie,
-    borderColor: COLOR.borde,
-    borderRadius: RADIO.circulo,
-    borderWidth: 1,
     justifyContent: "center",
     minHeight: 44,
-    minWidth: 64,
-    paddingHorizontal: ESPACIO.md,
-    paddingVertical: ESPACIO.sm,
-  },
-  textoAjustes: {
-    color: COLOR.marca,
-    fontSize: 15,
-    fontWeight: "700",
+    minWidth: 44,
   },
   presionado: {
     opacity: 0.6,
@@ -142,27 +167,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLOR.superficie,
     borderTopColor: COLOR.borde,
     borderTopWidth: 1,
-    height: 64,
-    paddingBottom: 6,
-    paddingTop: 6,
+    paddingTop: 5,
   },
   itemPestana: {
     paddingVertical: 2,
   },
   etiquetaPestana: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "600",
-  },
-  icono: {
-    fontSize: 20,
-    lineHeight: 24,
-  },
-  iconoActivo: {
-    opacity: 1,
-    transform: [{ scale: 1.1 }],
-  },
-  iconoInactivo: {
-    opacity: 0.6,
   },
   zonaBotonHeader: {
     paddingRight: ESPACIO.md,

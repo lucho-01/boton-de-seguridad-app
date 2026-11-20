@@ -8,7 +8,7 @@ import { PantallaConAviso } from "@/components/PantallaConAviso";
 import { Parrafo } from "@/components/Parrafo";
 import { TituloPantalla } from "@/components/TituloPantalla";
 import { type SesionConUsuario, correoDeSesion } from "@/components/estadoSesion";
-import { COLOR, ESPACIO, RADIO } from "@/components/tema";
+import { COLOR, ESPACIO, RADIO, SOMBRA_TARJETA } from "@/components/tema";
 import { useSesion, useSincronizacion } from "@/controllers/sesionContext";
 import { useAjustesController } from "@/controllers/useAjustesController";
 import { type EstadoApi } from "@/controllers/useSesionController";
@@ -86,6 +86,117 @@ interface VistaAjustesProps {
 }
 
 /** Cuerpo visual del formulario de ajustes. */
+function SeccionCuenta({
+  estadoApi,
+  comprobando,
+  verificarApi,
+  sesionConUsuario,
+  iniciando,
+  cerrar,
+  sincronizacion,
+}: Pick<
+  VistaAjustesProps,
+  | "estadoApi"
+  | "comprobando"
+  | "verificarApi"
+  | "sesionConUsuario"
+  | "iniciando"
+  | "cerrar"
+  | "sincronizacion"
+>) {
+  return (
+    <View style={styles.bloqueAjustes}>
+      <Text allowFontScaling style={styles.tituloSeccion}>
+        Cuenta y sincronización
+      </Text>
+      <BloqueEstadoApi estado={estadoApi} comprobando={comprobando} onComprobar={verificarApi} />
+      <BloqueSesion
+        email={correoDeSesion(sesionConUsuario)}
+        iniciando={iniciando}
+        onCerrar={cerrar}
+      />
+      <View style={styles.separador} />
+      <Text allowFontScaling style={styles.subtituloSeccion}>
+        Contactos y alertas
+      </Text>
+      <Parrafo>{sincronizacion.mensaje}</Parrafo>
+      {sesionConUsuario !== null && (
+        <Boton
+          texto="Sincronizar ahora"
+          etiquetaAccesible="Sincronizar contactos y alertas ahora"
+          onPress={() => {
+            void sincronizacion.sincronizar();
+          }}
+          deshabilitado={sincronizacion.estado === "sincronizando"}
+          variante="secundario"
+        />
+      )}
+    </View>
+  );
+}
+
+function SeccionSensibilidad({
+  umbral,
+  setUmbral,
+  ventana,
+  setVentana,
+}: Pick<VistaAjustesProps, "umbral" | "setUmbral" | "ventana" | "setVentana">) {
+  return (
+    <View style={styles.bloqueAjustes}>
+      <Text allowFontScaling style={styles.tituloSeccion}>
+        Sensibilidad de la sacudida
+      </Text>
+      <Parrafo>Ajusta qué tan fácil se detecta el gesto de seguridad.</Parrafo>
+      <CampoNumerico
+        etiqueta="Umbral de aceleración (m/s²)"
+        valor={umbral}
+        onCambio={setUmbral}
+        etiquetaAccesible="Umbral de aceleración de la sacudida"
+      />
+      <CampoNumerico
+        etiqueta="Ventana de tiempo (ms)"
+        valor={ventana}
+        onCambio={setVentana}
+        etiquetaAccesible="Ventana de tiempo para detectar sacudidas"
+      />
+      <View style={styles.contador}>
+        <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.textoAyuda}>
+          Umbral por defecto: {UMBRAL_SACUDIDA_POR_DEFECTO} m/s² · ventana:{" "}
+          {VENTANA_SACUDIDA_POR_DEFECTO} ms
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function SeccionMensaje({
+  mensaje,
+  errorMensaje,
+  actualizarMensaje,
+}: Pick<VistaAjustesProps, "mensaje" | "errorMensaje" | "actualizarMensaje">) {
+  return (
+    <View style={styles.bloqueAjustes}>
+      <Text allowFontScaling style={styles.tituloSeccion}>
+        Mensaje de emergencia
+      </Text>
+      <Parrafo>Este texto se abre en el redactor para que confirmes el envío.</Parrafo>
+      <CampoNumerico
+        etiqueta="Mensaje base"
+        valor={mensaje}
+        onCambio={actualizarMensaje}
+        error={errorMensaje}
+        teclado="default"
+        etiquetaAccesible="Mensaje base del SMS de emergencia"
+      />
+      <View style={styles.contador}>
+        <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.textoAyuda}>
+          {mensaje.length} / {LIMITE_MENSAJE_BASE} caracteres
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 function VistaAjustes({
   umbral,
   setUmbral,
@@ -108,65 +219,30 @@ function VistaAjustes({
 }: VistaAjustesProps) {
   return (
     <PantallaConAviso>
-      <TituloPantalla>Ajustes</TituloPantalla>
-      <BloqueEstadoApi estado={estadoApi} comprobando={comprobando} onComprobar={verificarApi} />
-      <BloqueSesion
-        email={correoDeSesion(sesionConUsuario)}
+      <View style={styles.introduccion}>
+        <TituloPantalla>Ajustes</TituloPantalla>
+        <Parrafo>Personaliza cómo funciona tu botón de seguridad.</Parrafo>
+      </View>
+      <SeccionCuenta
+        estadoApi={estadoApi}
+        comprobando={comprobando}
+        verificarApi={verificarApi}
+        sesionConUsuario={sesionConUsuario}
         iniciando={iniciando}
-        onCerrar={cerrar}
+        cerrar={cerrar}
+        sincronizacion={sincronizacion}
       />
-      <View style={styles.bloqueAjustes}>
-        <Parrafo>Sincronización de contactos y alertas</Parrafo>
-        <Parrafo>{sincronizacion.mensaje}</Parrafo>
-        {sesionConUsuario !== null && (
-          <Boton
-            texto="Sincronizar ahora"
-            etiquetaAccesible="Sincronizar contactos y alertas ahora"
-            onPress={() => {
-              void sincronizacion.sincronizar();
-            }}
-            deshabilitado={sincronizacion.estado === "sincronizando"}
-            variante="secundario"
-          />
-        )}
-      </View>
-      <View style={styles.bloqueAjustes}>
-        <Parrafo>Sensibilidad de la sacudida (para M7)</Parrafo>
-        <CampoNumerico
-          etiqueta="Umbral de aceleración (m/s²)"
-          valor={umbral}
-          onCambio={setUmbral}
-          etiquetaAccesible="Umbral de aceleración de la sacudida"
-        />
-        <CampoNumerico
-          etiqueta="Ventana de tiempo (ms)"
-          valor={ventana}
-          onCambio={setVentana}
-          etiquetaAccesible="Ventana de tiempo para detectar sacudidas"
-        />
-        <View style={styles.contador}>
-          <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.textoAyuda}>
-            Umbral por defecto: {UMBRAL_SACUDIDA_POR_DEFECTO} m/s² · ventana:{" "}
-            {VENTANA_SACUDIDA_POR_DEFECTO} ms
-          </Text>
-        </View>
-      </View>
-      <View style={styles.bloqueAjustes}>
-        <Parrafo>Mensaje base del SMS (para M10)</Parrafo>
-        <CampoNumerico
-          etiqueta="Mensaje base"
-          valor={mensaje}
-          onCambio={actualizarMensaje}
-          error={errorMensaje}
-          teclado="default"
-          etiquetaAccesible="Mensaje base del SMS de emergencia"
-        />
-        <View style={styles.contador}>
-          <Text allowFontScaling maxFontSizeMultiplier={1.4} style={styles.textoAyuda}>
-            {mensaje.length} / {LIMITE_MENSAJE_BASE} caracteres
-          </Text>
-        </View>
-      </View>
+      <SeccionSensibilidad
+        umbral={umbral}
+        setUmbral={setUmbral}
+        ventana={ventana}
+        setVentana={setVentana}
+      />
+      <SeccionMensaje
+        mensaje={mensaje}
+        errorMensaje={errorMensaje}
+        actualizarMensaje={actualizarMensaje}
+      />
       <View style={styles.botones}>
         <Boton
           texto={TEXTO_GUARDAR_AJUSTES}
@@ -245,15 +321,34 @@ export default function PantallaAjustes({
 }
 
 const styles = StyleSheet.create({
+  introduccion: {
+    gap: ESPACIO.xs,
+  },
   bloqueAjustes: {
     backgroundColor: COLOR.superficie,
     borderColor: COLOR.borde,
-    borderRadius: RADIO.md,
+    borderRadius: RADIO.lg,
     borderWidth: 1,
+    gap: ESPACIO.md,
     padding: ESPACIO.lg,
+    ...SOMBRA_TARJETA,
+  },
+  tituloSeccion: {
+    color: COLOR.texto,
+    fontSize: 17,
+    fontWeight: "700",
+  },
+  subtituloSeccion: {
+    color: COLOR.texto,
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  separador: {
+    backgroundColor: COLOR.borde,
+    height: 1,
   },
   campo: {
-    marginBottom: ESPACIO.lg,
+    marginBottom: ESPACIO.sm,
   },
   etiqueta: {
     color: COLOR.texto,
@@ -285,8 +380,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   botones: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: "column",
     gap: ESPACIO.sm,
     marginTop: ESPACIO.sm,
   },
