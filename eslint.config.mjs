@@ -5,6 +5,7 @@ import prettier from "eslint-config-prettier";
 const REGLAS_BASE = {
   curly: ["error", "all"],
   "no-empty": ["error", { allowEmptyCatch: true }],
+  "no-console": "error",
   "@typescript-eslint/no-explicit-any": "error",
   "no-restricted-syntax": [
     "error",
@@ -104,12 +105,24 @@ export default tseslint.config(
     rules: REGLAS_BASE,
   },
   {
-    files: ["**/*.js", "**/*.mjs"],
+    files: ["**/*.js", "**/*.mjs", "**/*.cjs", "jest.stubs/**"],
     languageOptions: {
       sourceType: "commonjs",
-      globals: { module: "writable", require: "readonly", __dirname: "readonly" },
+      globals: {
+        module: "writable",
+        exports: "writable",
+        require: "readonly",
+        __dirname: "readonly",
+        jest: "readonly",
+        afterEach: "readonly",
+        beforeEach: "readonly",
+      },
     },
-    rules: { "no-undef": "off" },
+    rules: { "no-undef": "off", "@typescript-eslint/no-require-imports": "off" },
+  },
+  {
+    files: ["ia/**/*.ts", "ia/**/*.tsx"],
+    rules: { "no-console": "off" },
   },
   {
     files: ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**/*.ts"],

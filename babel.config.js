@@ -1,12 +1,17 @@
 /**
- * Preset de Babel para Jest.
+ * Preset de Babel de la app (Expo SDK 58).
  *
- * Espera a M0: cuando M0 instale el SDK de Expo, `babel-preset-expo` (ya en devDependencies)
- * reemplaza a este preset con sus opciones, y las pruebas de la app podrán importar
- * `react-native`, `expo-*` y JSX. Hoy solo se transpila TypeScript a CommonJS para las
- * pruebas de `ia/`, que no dependen de Expo.
+ * `babel-preset-expo` ya incluye el soporte de React Native, JSX, TypeScript y
+ * la transformación que necesita Reanimated 4 (no hace falta añadir
+ * `react-native-reanimated/plugin` a mano). Lo usan Metro y Jest.
+ *
+ * Bajo Jest se desactivan los imports ESM de `react-native-web` para que
+ * `@testing-library/react-native` comparta una sola copia de su registro
+ * interno (`screen` se quedaba «detached» y `render` no encontraba el árbol).
  */
-module.exports = {
-  presets: ["@babel/preset-typescript"],
-  plugins: ["@babel/plugin-transform-modules-commonjs"],
+module.exports = function configurarBabel(api) {
+  api.cache(true);
+  return {
+    presets: ["babel-preset-expo"],
+  };
 };
