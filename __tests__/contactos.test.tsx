@@ -6,6 +6,8 @@
  */
 
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import type { ReactElement } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import PantallaContacto from "../app/contacto";
 import PantallaContactos from "../app/(tabs)/contactos";
@@ -66,6 +68,15 @@ const mockGuardar = (ctl: ContactosController) => jest.mocked(ctl.guardar);
 const mockEliminar = (ctl: ContactosController) => jest.mocked(ctl.eliminar);
 const mockObtenerContacto = (ctl: ContactosController) => jest.mocked(ctl.obtenerContacto);
 
+/**
+ * Las filas de contactos usan `GestureDetector`, que exige un
+ * `GestureHandlerRootView` ancestro (RNGH v3). En la app lo pone el layout;
+ * aquí se añade el mismo contenedor para que el render sea fiel.
+ */
+function renderConGestos(ui: ReactElement) {
+  return render(<GestureHandlerRootView style={{ flex: 1 }}>{ui}</GestureHandlerRootView>);
+}
+
 /** Variables capturadas dentro del factory de jest.mock para expo-router. */
 let mockPushVar: jest.Mock;
 let mockBackVar: jest.Mock;
@@ -88,7 +99,7 @@ describe("PantallaContactos", () => {
 
   it("muestra estado vacío y botón añadir", async () => {
     const ctl = controladorFalso();
-    await render(<PantallaContactos controlador={ctl} />);
+    await renderConGestos(<PantallaContactos controlador={ctl} />);
 
     expect(screen.getByText(TEXTO_SIN_CONTACTOS)).toBeOnTheScreen();
     const botonesAgregar = screen.getAllByText(TEXTO_AGREGAR_CONTACTO);
@@ -100,7 +111,7 @@ describe("PantallaContactos", () => {
     const ctl = controladorFalso({
       contactos: [contactoEjemplo],
     });
-    await render(<PantallaContactos controlador={ctl} />);
+    await renderConGestos(<PantallaContactos controlador={ctl} />);
 
     expect(screen.getByText("Ana Gómez")).toBeOnTheScreen();
     expect(screen.getByText("3001112233")).toBeOnTheScreen();
@@ -110,14 +121,14 @@ describe("PantallaContactos", () => {
 
   it("muestra aviso del controlador", async () => {
     const ctl = controladorFalso({ aviso: "Contacto guardado." });
-    await render(<PantallaContactos controlador={ctl} />);
+    await renderConGestos(<PantallaContactos controlador={ctl} />);
 
     expect(screen.getByText("Contacto guardado.")).toBeOnTheScreen();
   });
 
   it("navega al formulario al pulsar añadir", async () => {
     const ctl = controladorFalso();
-    await render(<PantallaContactos controlador={ctl} />);
+    await renderConGestos(<PantallaContactos controlador={ctl} />);
 
     const botonesAgregar = screen.getAllByLabelText("Añadir un contacto de confianza");
     await act(async () => {
@@ -129,7 +140,7 @@ describe("PantallaContactos", () => {
 
   it("navega al formulario de edición al pulsar editar", async () => {
     const ctl = controladorFalso({ contactos: [contactoEjemplo] });
-    await render(<PantallaContactos controlador={ctl} />);
+    await renderConGestos(<PantallaContactos controlador={ctl} />);
 
     await act(async () => {
       await fireEvent.press(screen.getByLabelText(ETIQUETA_EDITAR));
@@ -140,7 +151,7 @@ describe("PantallaContactos", () => {
 
   it("pide confirmación antes de eliminar", async () => {
     const ctl = controladorFalso({ contactos: [contactoEjemplo] });
-    await render(<PantallaContactos controlador={ctl} />);
+    await renderConGestos(<PantallaContactos controlador={ctl} />);
 
     await act(async () => {
       await fireEvent.press(screen.getByLabelText(ETIQUETA_ELIMINAR));
@@ -153,7 +164,7 @@ describe("PantallaContactos", () => {
 
   it("elimina el contacto al confirmar", async () => {
     const ctl = controladorFalso({ contactos: [contactoEjemplo] });
-    await render(<PantallaContactos controlador={ctl} />);
+    await renderConGestos(<PantallaContactos controlador={ctl} />);
 
     await act(async () => {
       await fireEvent.press(screen.getByLabelText(ETIQUETA_ELIMINAR));
@@ -167,7 +178,7 @@ describe("PantallaContactos", () => {
 
   it("no elimina al cancelar la confirmación", async () => {
     const ctl = controladorFalso({ contactos: [contactoEjemplo] });
-    await render(<PantallaContactos controlador={ctl} />);
+    await renderConGestos(<PantallaContactos controlador={ctl} />);
 
     await act(async () => {
       await fireEvent.press(screen.getByLabelText(ETIQUETA_ELIMINAR));
@@ -187,7 +198,7 @@ describe("PantallaContactos", () => {
       telefono: `300000000${i}`,
     }));
     const ctl = controladorFalso({ contactos: cinco, puedeAgregar: false });
-    await render(<PantallaContactos controlador={ctl} />);
+    await renderConGestos(<PantallaContactos controlador={ctl} />);
 
     expect(screen.getByLabelText("Añadir un contacto de confianza")).toBeDisabled();
   });
@@ -201,7 +212,7 @@ describe("PantallaContacto", () => {
 
   it("muestra formulario de alta con campos vacíos", async () => {
     const ctl = controladorFalso();
-    await render(<PantallaContacto controlador={ctl} />);
+    await renderConGestos(<PantallaContacto controlador={ctl} />);
 
     expect(screen.getByLabelText(ETIQUETA_NOMBRE)).toBeOnTheScreen();
     expect(screen.getByLabelText(ETIQUETA_TELEFONO)).toBeOnTheScreen();
@@ -212,7 +223,7 @@ describe("PantallaContacto", () => {
 
   it("guarda un contacto válido y vuelve atrás", async () => {
     const ctl = controladorFalso();
-    await render(<PantallaContacto controlador={ctl} />);
+    await renderConGestos(<PantallaContacto controlador={ctl} />);
 
     await act(async () => {
       await fireEvent.changeText(screen.getByLabelText(ETIQUETA_NOMBRE), "Juan");
@@ -241,7 +252,7 @@ describe("PantallaContacto", () => {
         ],
       })),
     });
-    await render(<PantallaContacto controlador={ctl} />);
+    await renderConGestos(<PantallaContacto controlador={ctl} />);
 
     await act(async () => {
       await fireEvent.press(screen.getByText(TEXTO_GUARDAR));
@@ -256,7 +267,7 @@ describe("PantallaContacto", () => {
     const ctl = controladorFalso({
       obtenerContacto: jest.fn(() => contactoEjemplo),
     });
-    await render(<PantallaContacto controlador={ctl} id="c1" />);
+    await renderConGestos(<PantallaContacto controlador={ctl} id="c1" />);
 
     expect(mockObtenerContacto(ctl)).toHaveBeenCalledWith("c1");
     expect(screen.getByLabelText(ETIQUETA_NOMBRE).props.value).toBe("Ana Gómez");
@@ -268,7 +279,7 @@ describe("PantallaContacto", () => {
     const ctl = controladorFalso({
       obtenerContacto: jest.fn(() => contactoEjemplo),
     });
-    await render(<PantallaContacto controlador={ctl} id="c1" />);
+    await renderConGestos(<PantallaContacto controlador={ctl} id="c1" />);
 
     await act(async () => {
       await fireEvent.changeText(screen.getByLabelText(ETIQUETA_NOMBRE), "Ana Editada");
@@ -286,7 +297,7 @@ describe("PantallaContacto", () => {
 
   it("volver atrás pulsa cancelar", async () => {
     const ctl = controladorFalso();
-    await render(<PantallaContacto controlador={ctl} />);
+    await renderConGestos(<PantallaContacto controlador={ctl} />);
 
     await act(async () => {
       await fireEvent.press(screen.getByText(TEXTO_CANCELAR));
