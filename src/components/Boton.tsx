@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
+import { COLOR, RADIO } from "@/components/tema";
+
 export type VarianteBoton = "primario" | "secundario" | "peligro";
 
 interface BotonProps {
@@ -24,12 +26,16 @@ interface ColoresBoton {
 }
 
 const COLORS: Record<VarianteBoton, ColoresBoton> = {
-  primario: { fondo: "#0B5FFF", texto: "#FFFFFF", borde: "#0B5FFF" },
-  secundario: { fondo: "#FFFFFF", texto: "#0B5FFF", borde: "#0B5FFF" },
-  peligro: { fondo: "#B3261E", texto: "#FFFFFF", borde: "#B3261E" },
+  primario: { fondo: COLOR.marca, texto: COLOR.blanco, borde: COLOR.marcaOscura },
+  secundario: { fondo: COLOR.superficie, texto: COLOR.marca, borde: COLOR.marca },
+  peligro: { fondo: COLOR.peligro, texto: COLOR.blanco, borde: "#8E1B13" },
 };
 
-const COLORS_DESHABILITADO: ColoresBoton = { fondo: "#E1E4E8", texto: "#4A5560", borde: "#C6CBD1" };
+const COLORS_DESHABILITADO: ColoresBoton = {
+  fondo: "#E7EBF0",
+  texto: "#6B7684",
+  borde: "#D3DAE3",
+};
 
 function coloresDe(variante: VarianteBoton, deshabilitado: boolean): ColoresBoton {
   if (deshabilitado) {
@@ -40,7 +46,7 @@ function coloresDe(variante: VarianteBoton, deshabilitado: boolean): ColoresBoto
 
 function opacidadDe(presionado: boolean): number {
   if (presionado) {
-    return 0.75;
+    return 0.82;
   }
   return 1;
 }
@@ -87,17 +93,18 @@ export function Boton({
 const styles = StyleSheet.create({
   base: {
     alignItems: "center",
-    borderRadius: 12,
-    borderWidth: 2,
+    borderRadius: RADIO.md,
+    borderWidth: 1.5,
     justifyContent: "center",
-    minHeight: 48,
+    minHeight: 50,
     minWidth: 48,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 13,
   },
   texto: {
-    fontSize: 17,
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 0.2,
     textAlign: "center",
   },
 });

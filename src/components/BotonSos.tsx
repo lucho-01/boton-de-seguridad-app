@@ -102,6 +102,10 @@ export function BotonSos({ estado, progreso, onIniciar, onCancelar }: BotonSosPr
 
   /** Pulsación sin umbral propio: el controlador mide los 3 s (R1). */
   const gestoPulsacion = useLongPressGesture({
+    /* Los callbacks corren en el hilo de UI; sin esto, llamar a `onIniciar`
+       (JS) lanza «Tried to synchronously call a Remote Function» y cierra la
+       app al mantener presionado. */
+    runOnJS: true,
     minDuration: 0,
     maxDistance: 80,
     onBegin: () => {
@@ -224,7 +228,7 @@ const styles = StyleSheet.create({
   bloque: {
     alignItems: "center",
     alignSelf: "center",
-    gap: 12,
+    gap: 14,
   },
   zonaTactil: {
     alignItems: "center",
@@ -235,26 +239,34 @@ const styles = StyleSheet.create({
   circulo: {
     alignItems: "center",
     borderRadius: LADO_CIRCULO / 2,
-    borderWidth: 4,
+    borderWidth: 3,
+    elevation: 6,
     height: LADO_CIRCULO,
     justifyContent: "center",
+    shadowColor: "#0E1726",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
     width: LADO_CIRCULO,
   },
   titulo: {
     color: COLOR_TEXTO,
-    fontSize: 56,
-    fontWeight: "800",
-    letterSpacing: 2,
+    fontSize: 60,
+    fontWeight: "900",
+    letterSpacing: 3,
   },
   leyenda: {
     color: COLOR_TEXTO,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
+    letterSpacing: 0.3,
+    marginTop: 2,
+    opacity: 0.95,
     textAlign: "center",
   },
   progresoTexto: {
-    color: "#1F2933",
-    fontSize: 16,
+    color: "#3B4654",
+    fontSize: 15,
     lineHeight: 22,
     textAlign: "center",
   },

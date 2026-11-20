@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AvisoLinea123 } from "@/components/AvisoLinea123";
+import { ESPACIO, COLOR } from "@/components/tema";
 
 interface PantallaConAvisoProps {
   /** Contenido propio de la pantalla. */
@@ -42,20 +43,21 @@ export function PantallaConAviso({ children, conBarraDePestanas = false }: Panta
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: COLOR.fondo,
     flex: 1,
   },
   contenido: {
     flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: ESPACIO.lg,
+    paddingTop: ESPACIO.md,
+    paddingBottom: ESPACIO.sm,
   },
   cuerpo: {
     flexGrow: 1,
-    gap: 16,
-    marginBottom: 16,
+    gap: ESPACIO.lg,
+    marginBottom: ESPACIO.lg,
   },
   espacio: {
-    minHeight: 24,
+    minHeight: ESPACIO.xl,
   },
 });

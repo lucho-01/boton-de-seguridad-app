@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { StyleSheet, Text } from "react-native";
 
+import { COLOR, ESPACIO } from "@/components/tema";
+
 interface TituloPantallaProps {
   /** Título principal de la pantalla (se anuncia como encabezado). */
   children: ReactNode;
@@ -22,9 +24,11 @@ export function TituloPantalla({ children }: TituloPantallaProps) {
 
 const styles = StyleSheet.create({
   titulo: {
-    color: "#11181C",
-    fontSize: 28,
-    fontWeight: "700",
-    lineHeight: 34,
+    color: COLOR.texto,
+    fontSize: 30,
+    fontWeight: "800",
+    letterSpacing: -0.6,
+    lineHeight: 36,
+    marginBottom: ESPACIO.xs,
   },
 });

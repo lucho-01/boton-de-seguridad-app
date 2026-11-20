@@ -1,5 +1,7 @@
 import { StyleSheet, Text } from "react-native";
 
+import { COLOR, RADIO } from "@/components/tema";
+
 /** Texto literal exigido por la spec M0 (§5 R7) y por RF-06. */
 export const TEXTO_AVISO_123 =
   "Este proyecto es educativo y no reemplaza la línea de emergencias 123.";
@@ -21,13 +23,15 @@ export function AvisoLinea123() {
 
 const styles = StyleSheet.create({
   aviso: {
-    backgroundColor: "#FFF4E5",
-    borderColor: "#8A4B00",
+    backgroundColor: COLOR.avisoFondo,
+    borderColor: COLOR.avisoBorde,
+    borderRadius: RADIO.sm,
+    borderWidth: 1,
     borderLeftWidth: 4,
-    color: "#4A2A00",
-    fontSize: 16,
+    color: COLOR.avisoTexto,
+    fontSize: 15,
     lineHeight: 22,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
 });
