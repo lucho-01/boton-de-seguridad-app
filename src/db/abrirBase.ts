@@ -9,7 +9,7 @@
  *
  * M4 y M5 usan la tabla `contacto_confianza`; M6 añade la tabla `ajustes`
  * (clave/valor para persistencia local de sensibilidad y mensaje base).
- * M13 completará el resto del esquema (tabla de alertas y CRUD de alertas).
+ * M12 añade la tabla de alertas para el historial local.
  */
 
 import { openDatabaseSync } from "expo-sqlite";
@@ -63,6 +63,24 @@ async function migrar(base: SQLiteDatabase): Promise<void> {
     `CREATE TABLE IF NOT EXISTS ajustes (
       clave TEXT PRIMARY KEY,
       valor TEXT NOT NULL
+    );`,
+  );
+
+  await base.execAsync(
+    `CREATE TABLE IF NOT EXISTS alerta (
+      id TEXT PRIMARY KEY,
+      remote_id TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      deleted_at TEXT,
+      pending INTEGER NOT NULL DEFAULT 1,
+      deleted INTEGER NOT NULL DEFAULT 0,
+      lat REAL,
+      lng REAL,
+      precision_m REAL,
+      bateria_pct INTEGER,
+      estado TEXT NOT NULL CHECK (estado IN ('cancelada', 'mensaje_preparado')),
+      creada_en TEXT NOT NULL
     );`,
   );
 

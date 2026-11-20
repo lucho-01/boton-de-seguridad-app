@@ -1,6 +1,6 @@
 # Spec M10 — Mensaje SMS con enlace de mapa
 
-- **Estado:** Borrador (pendiente de aprobación)
+- **Estado:** Aprobada
 - **Feature:** M10 — Componer el mensaje (≤ 160 caracteres, enlace de mapa) y abrir el redactor (`docs/features.md`)
 - **Fecha:** 2026-11-20
 - **Depende de:** M4 (contactos), M8 (ubicación), M9 (batería)
@@ -91,12 +91,12 @@ No hay gestos nuevos. En `lista` se añade:
 
 ## 10. Preguntas abiertas
 
-| #   | Pregunta                                                                 | Propuesta                                                               | Respuesta de la persona |
-| --- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------- | ----------------------- |
-| 1   | ¿Se abre el redactor automáticamente al llegar a `lista` o con un botón? | Con un botón explícito, para que la persona vea antes el mensaje.       | _pendiente_             |
-| 2   | ¿Formato del enlace de mapa?                                             | `https://maps.google.com/?q=<lat>,<lng>` (abre en cualquier navegador). | _pendiente_             |
-| 3   | ¿Destinatarios?                                                          | Todos los contactos de confianza a la vez; sin contactos no se abre.    | _pendiente_             |
-| 4   | ¿Qué se recorta para respetar los 160 caracteres?                        | El mensaje base; el enlace y la línea de batería se conservan.          | _pendiente_             |
+| #   | Pregunta                                                                 | Propuesta                                                               | Respuesta de la persona                                           |
+| --- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| 1   | ¿Se abre el redactor automáticamente al llegar a `lista` o con un botón? | Con un botón explícito, para que la persona vea antes el mensaje.       | Con un botón explícito.                                           |
+| 2   | ¿Formato del enlace de mapa?                                             | `https://maps.google.com/?q=<lat>,<lng>` (abre en cualquier navegador). | Con un botón explícito, para que la persona vea antes el mensaje. |
+| 3   | ¿Destinatarios?                                                          | Todos los contactos de confianza a la vez; sin contactos no se abre.    | Todos los contactos de confianza.                                 |
+| 4   | ¿Qué se recorta para respetar los 160 caracteres?                        | El mensaje base; el enlace y la línea de batería se conservan.          | El mensaje base; se conserva el enlace.                           |
 
 ## 11. Decisiones y dependencias
 

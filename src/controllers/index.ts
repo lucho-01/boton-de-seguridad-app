@@ -23,4 +23,13 @@ export {
   type ContactoConfianza,
 } from "./useContactosController";
 
+export {
+  useSmsController,
+  type SmsController,
+  type DatosMensajeSmsContexto,
+  type SmsRepositories,
+} from "./useSmsController";
+
+export { useHistorialController, type HistorialController } from "./useHistorialController";
+
 export { esPrincipal } from "@/services/contactos";

@@ -117,7 +117,7 @@ function relativeToRoot(p: string, root: string): { rel: string; outside: boolea
 /** Repo hermano autorizado por la persona el 2026-11-14 para construir la API (A0). */
 export const REPO_HERMANO = "boton-de-seguridad-api";
 
-/** ¿La ruta cae dentro del repo hermano autorizado? (se compara la ruta ya resuelta) */
+/** ¿La ruta cae dentro del repo hermano autorizado? */
 export function enRepoHermano(p: string, root: string): boolean {
   const hermano = resolve(realpathOrSelf(root), "..", REPO_HERMANO);
   const abs = resolve(root, p);
@@ -133,9 +133,6 @@ export function isOutsideRoot(p: string, root: string): boolean {
   if (p === "~" || p.startsWith("~/") || p.startsWith("~\\")) {
     return true;
   }
-  if (enRepoHermano(p, root)) {
-    return false;
-  }
   const info = relativeToRoot(p, root);
   if (info === null) {
     return false;
@@ -143,7 +140,34 @@ export function isOutsideRoot(p: string, root: string): boolean {
   return info.outside;
 }
 
-/** ¿La ruta cae en una zona prohibida? (también dentro del repo hermano autorizado) */
+/** Convierte una ruta dentro del repo hermano a una ruta relativa comprobable. */
+function relDelRepo(
+  p: string,
+  root: string,
+  rel: string,
+  outside: boolean,
+  hermano: boolean,
+): string {
+  if (hermano) {
+    const hermanoRoot = resolve(realpathOrSelf(root), "..", REPO_HERMANO);
+    const abs = resolve(root, p);
+    let real = abs;
+    if (existsSync(abs)) {
+      real = realpathSync(abs);
+    }
+    const relativeSibling = relative(realpathOrSelf(hermanoRoot), real);
+    if (!relativeSibling) {
+      return rel;
+    }
+    return relativeSibling.split(sep).join("/");
+  }
+  if (!outside) {
+    return rel;
+  }
+  return rel;
+}
+
+/** ¿La ruta cae en una zona prohibida? */
 export function isForbiddenPath(p: string, root: string): boolean {
   const hermano = enRepoHermano(p, root);
   const info = relativeToRoot(p, root);

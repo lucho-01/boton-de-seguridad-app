@@ -44,6 +44,17 @@ jest.mock("expo-sensors", () => {
   };
 });
 
+jest.mock("expo-sms", () => ({
+  __esModule: true,
+  isAvailableAsync: jest.fn(async () => true),
+  sendSMSAsync: jest.fn(async () => ({ result: "cancelled" })),
+}));
+
+jest.mock("expo-clipboard", () => ({
+  __esModule: true,
+  setStringAsync: jest.fn(async () => true),
+}));
+
 jest.mock("react-native-gesture-handler/lib/module/RNGestureHandlerModule", () => {
   return require("react-native-gesture-handler/lib/module/mocks/module");
 });

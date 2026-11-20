@@ -28,6 +28,7 @@
     },
     "edit": {
       "*": "allow",
+      "../*": "deny",
       ".env": "deny",
       ".env.*": "deny",
       "**/.env": "deny",

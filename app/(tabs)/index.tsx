@@ -8,9 +8,12 @@ import { BotonSos } from "@/components/BotonSos";
 import { ContenidoArmado } from "@/components/ContenidoArmado";
 import { CuentaRegresiva } from "@/components/CuentaRegresiva";
 import { PantallaConAviso } from "@/components/PantallaConAviso";
+import { Parrafo } from "@/components/Parrafo";
 import { TituloPantalla } from "@/components/TituloPantalla";
 import { COLOR, ESPACIO, RADIO } from "@/components/tema";
 import { useArmadoController, type EstadoArmado } from "@/controllers";
+import { useSmsController } from "@/controllers/useSmsController";
+import { useRegistrarAlertaController } from "@/controllers/useRegistrarAlertaController";
 import { detectarSacudidaTriple, type MuestraAceleracion } from "@/services/sacudida";
 import { valoresPorDefecto } from "@/services/ajustes";
 import { useAcelerometro } from "@/sensors/useAcelerometro";
@@ -18,6 +21,78 @@ import { useUbicacion, type Ubicacion } from "@/sensors/useUbicacion";
 
 /** Umbral y ventana de sacudida triple (ajustes de M6). */
 const { umbralSacudida, ventanaSacudida } = valoresPorDefecto();
+
+function ubicacionConvertida(ubicacion: Ubicacion | null) {
+  if (ubicacion === null) {
+    return null;
+  }
+  return {
+    lat: ubicacion.latitud,
+    lng: ubicacion.longitud,
+    precision: ubicacion.precision,
+  };
+}
+
+function useSmsDeEstado(
+  estado: EstadoArmado,
+  ubicacion: Ubicacion | null,
+  bateriaPct: number | null,
+) {
+  let latitud: number | null = null;
+  let longitud: number | null = null;
+  if (ubicacion !== null) {
+    latitud = ubicacion.latitud;
+    longitud = ubicacion.longitud;
+  }
+
+  return useSmsController({
+    activo: estado === "lista",
+    lat: latitud,
+    lng: longitud,
+    bateriaPct,
+  });
+}
+
+function useUbicacionLista(
+  estado: EstadoArmado,
+  obtenerUbicacion: () => Promise<Ubicacion | null>,
+) {
+  const [ubicacion, setUbicacion] = useState<Ubicacion | null>(null);
+  const [ubicacionFallida, setUbicacionFallida] = useState(false);
+  const solicitudRef = useRef(false);
+
+  useEffect(() => {
+    if (estado !== "lista") {
+      return;
+    }
+    if (solicitudRef.current) {
+      return;
+    }
+    solicitudRef.current = true;
+    void obtenerUbicacion()
+      .then((resultado) => {
+        if (resultado === null) {
+          setUbicacionFallida(true);
+          return;
+        }
+        setUbicacion(resultado);
+      })
+      .catch(() => {
+        setUbicacionFallida(true);
+      });
+  }, [estado, obtenerUbicacion]);
+
+  useEffect(() => {
+    if (estado !== "idle") {
+      return;
+    }
+    setUbicacion(null);
+    setUbicacionFallida(false);
+    solicitudRef.current = false;
+  }, [estado]);
+
+  return { ubicacion, ubicacionFallida };
+}
 
 /**
  * Pantalla del botón SOS (M2), cuenta regresiva (M3), sacudida triple (M7) y
@@ -41,12 +116,15 @@ export default function PantallaAlerta() {
   const { disponible: disponibleUbicacion, obtenerUbicacion } = useUbicacion();
   /** Muestras del acelerómetro dentro de la ventana de detección (M7). */
   const muestrasRef = useRef<MuestraAceleracion[]>([]);
-  /** Ubicación obtenida al pasar a `lista` (M8). */
-  const [ubicacion, setUbicacion] = useState<Ubicacion | null>(null);
-  /** Si se intentó obtener ubicación y no se pudo (M8). */
-  const [ubicacionFallida, setUbicacionFallida] = useState<boolean>(false);
-  /** Evita solicitar ubicación más de una vez por visita a `lista`. */
-  const solicitudRef = useRef<boolean>(false);
+  const { ubicacion, ubicacionFallida } = useUbicacionLista(estado, obtenerUbicacion);
+
+  const sms = useSmsDeEstado(estado, ubicacion, bateria.porcentaje);
+  const avisoRegistro = useRegistrarAlertaController({
+    estado,
+    ubicacion: ubicacionConvertida(ubicacion),
+    ubicacionLista: ubicacion !== null || ubicacionFallida,
+    bateriaPct: bateria.porcentaje,
+  });
 
   /* Soltar cancela solo durante el armado (R2); durante la cuenta, el botón o
      el deslizamiento son las vías de cancelación. */
@@ -83,34 +161,6 @@ export default function PantallaAlerta() {
     });
   }, [disponibleSacudida, suscribir, estado, iniciar, umbralSacudida, ventanaSacudida]);
 
-  /** Al llegar a `lista`, solicita la ubicación automáticamente (M8 R1). */
-  useEffect(() => {
-    if (estado !== "lista") {
-      return;
-    }
-    if (solicitudRef.current) {
-      return;
-    }
-    solicitudRef.current = true;
-    void obtenerUbicacion().then((resultado: Ubicacion | null) => {
-      if (resultado === null) {
-        setUbicacionFallida(true);
-        return;
-      }
-      setUbicacion(resultado);
-    });
-  }, [estado, obtenerUbicacion]);
-
-  /** Limpia la ubicación al volver al reposo para la próxima cuenta. */
-  useEffect(() => {
-    if (estado !== "idle") {
-      return;
-    }
-    setUbicacion(null);
-    setUbicacionFallida(false);
-    solicitudRef.current = false;
-  }, [estado]);
-
   return (
     <PantallaConAviso conBarraDePestanas>
       <TituloPantalla>Botón de seguridad</TituloPantalla>
@@ -134,7 +184,9 @@ export default function PantallaAlerta() {
         onVolverAlInicio={volverAlInicio}
         ubicacion={ubicacion}
         ubicacionFallida={ubicacionFallida}
+        sms={sms}
       />
+      {avisoRegistro !== null && <Parrafo>{avisoRegistro}</Parrafo>}
       {bloqueBateria(estado, bateria.porcentaje)}
     </PantallaConAviso>
   );

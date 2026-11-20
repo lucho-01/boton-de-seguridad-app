@@ -14,8 +14,11 @@ Lo mantiene el orquestador: se actualiza al cerrar cada feature (spec aprobada �
 - **M7 construido el 2026-11-19** (spec aprobada → construida → `npm run check`: formato, lint, tipos OK → `docs/handoffs/m7.md`): sacudida triple con acelerómetro (umbral 15 m/s², ventana 2000 ms) para iniciar la cuenta de 5 s, doble toque para marcar contacto principal (solo uno a la vez), campo `principal` en SQLite y contrato con la API, botón alternativo accesible para cada gesto, indicador visual de principal.
 - **M8 construido el 2026-11-19** (spec aprobada → construida → `npm run check`: formato, lint, tipos OK → `docs/handoffs/m8.md`): ubicación al terminar la cuenta (estado `lista`), lectura de coordenadas GPS (lat, lng, precisión) con permiso `expo-location`, borrado lógico, alternancia sin ubicación si se niega el permiso o no hay GPS.
 - **M9 construido el 2026-11-19** (spec aprobada → construida → `npm run check`: formato, lint, tipos OK → `docs/handoffs/m9.md`): batería y vibración por segundo, umbral 15 m/s² y ventana 2000 ms para sacudida, mensaje base del SMS (máx. 160 caracteres, contador, valor por defecto), persistencia en SQLite (tabla `ajustes`), todos los controles con `accessibilityLabel` y objetivos ≥44×44.
+- **M10 construido el 2026-11-20** (spec aprobada → construida → suite completa con 483 pruebas → `docs/handoffs/m10.md`): composición pura del SMS con enlace de mapa y batería, límite de 160 caracteres, redactor nativo de `expo-sms`, vista previa accesible y fallos seguros sin contactos, sin ubicación o sin SMS.
+- **M11 construido el 2026-11-20** (ADR-0007 → spec → lint/tipos/formato en verde → 497 pruebas → `docs/handoffs/m11.md`): cuando `expo-sms` no está disponible, se muestra un aviso y una acción accesible para copiar el mensaje al portapapeles; se confirma éxito y se informa el fallo de copia.
+- **M12 construido el 2026-11-20** (spec → lint/tipos en verde → 46 suites y 504 pruebas → `docs/handoffs/m12.md`): registro local de alertas canceladas y mensajes preparados, migración SQLite y pantalla de historial con estados de carga, vacío, error y reintento.
 - **Spec en curso:** ninguna.
-- **Siguiente:** M10 (SMS/redactor) o M13 (SQLite).
+- **Siguiente:** M13 (CRUD SQLite de contactos y alertas).
 
 ## Decisiones tomadas
 

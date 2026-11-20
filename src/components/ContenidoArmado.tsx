@@ -6,10 +6,21 @@ import { Parrafo } from "@/components/Parrafo";
 import type { EstadoArmado } from "@/controllers";
 import type { Ubicacion } from "@/sensors/useUbicacion";
 
+interface SmsVista {
+  disponible: boolean;
+  mensaje: string;
+  longitudMensaje: number;
+  tieneUbicacion: boolean;
+  puedeAbrir: boolean;
+  puedeCopiar: boolean;
+  aviso: string | null;
+  avisoCopia: string | null;
+  abrirRedactor(): Promise<boolean>;
+  copiarMensaje(): Promise<boolean>;
+}
+
 /** Texto de reposo de la pantalla. */
 export const TEXTO_REPOSO = "Mantén presionado 3 segundos. También puedes usar el botón de abajo.";
-/** Nota del hito: la cuenta ya existe; el SMS llega después. */
-export const TEXTO_NOTA_M10 = "El mensaje SMS llega en M10.";
 /** Texto del final de la cuenta en M3 (spec R8). */
 export const TEXTO_CUENTA_TERMINADA = "Cuenta terminada.";
 /** Etiqueta del botón que vuelve al inicio desde `lista`. */
@@ -68,7 +79,22 @@ interface ContenidoArmadoProps {
   ubicacion: Ubicacion | null;
   /** Si se intentó obtener ubicación y no se pudo (M8). */
   ubicacionFallida: boolean;
+  /** Mensaje, avisos y acción del redactor SMS (M10). */
+  sms?: SmsVista;
 }
+
+const SMS_FALLBACK: SmsVista = {
+  disponible: false,
+  mensaje: "",
+  longitudMensaje: 0,
+  tieneUbicacion: false,
+  puedeAbrir: false,
+  puedeCopiar: false,
+  aviso: "El SMS no está disponible en este dispositivo.",
+  avisoCopia: null,
+  abrirRedactor: async () => false,
+  copiarMensaje: async () => false,
+};
 
 /** Contenido de la pantalla que cambia con el estado del flujo. */
 export function ContenidoArmado({
@@ -76,13 +102,19 @@ export function ContenidoArmado({
   onVolverAlInicio,
   ubicacion,
   ubicacionFallida,
+  sms,
 }: ContenidoArmadoProps) {
+  let smsContenido = SMS_FALLBACK;
+  if (sms !== undefined) {
+    smsContenido = sms;
+  }
   if (estado === "lista") {
     return (
       <ContenidoLista
         onVolverAlInicio={onVolverAlInicio}
         ubicacion={ubicacion}
         ubicacionFallida={ubicacionFallida}
+        sms={smsContenido}
       />
     );
   }
@@ -142,19 +174,20 @@ function ContenidoLista({
   onVolverAlInicio,
   ubicacion,
   ubicacionFallida,
+  sms,
 }: {
   onVolverAlInicio: () => void;
   ubicacion: Ubicacion | null;
   ubicacionFallida: boolean;
+  sms: SmsVista;
 }) {
   return (
     <View style={styles.bloque}>
       <View accessibilityLiveRegion="polite" accessibilityRole="summary">
-        <Parrafo>
-          {TEXTO_CUENTA_TERMINADA} {TEXTO_NOTA_M10}
-        </Parrafo>
+        <Parrafo>{TEXTO_CUENTA_TERMINADA}</Parrafo>
       </View>
       {renderUbicacion(ubicacion, ubicacionFallida)}
+      <VistaMensajeSms sms={sms} />
       <Boton
         texto="Volver al inicio"
         etiquetaAccesible={ETIQUETA_VOLVER}
@@ -165,8 +198,56 @@ function ContenidoLista({
   );
 }
 
+/** Vista previa y acción explícita del SMS en el estado final. */
+function VistaMensajeSms({ sms }: { sms: SmsVista }) {
+  return (
+    <View style={styles.bloque}>
+      <Parrafo>Mensaje para enviar:</Parrafo>
+      <View accessibilityRole="summary" style={styles.vistaMensaje}>
+        <Parrafo>{sms.mensaje}</Parrafo>
+      </View>
+      <Parrafo>{sms.longitudMensaje} / 160 caracteres</Parrafo>
+      {sms.aviso !== null && <Parrafo>{sms.aviso}</Parrafo>}
+      {sms.avisoCopia !== null && <Parrafo>{sms.avisoCopia}</Parrafo>}
+      <Boton
+        texto="Abrir mensaje para enviar"
+        etiquetaAccesible="Abrir mensaje para enviar"
+        pistaAccesible="Abre el redactor del teléfono. Debes pulsar Enviar manualmente."
+        onPress={() => {
+          void sms.abrirRedactor();
+        }}
+        deshabilitado={!sms.puedeAbrir}
+      />
+      {botonCopiar(sms)}
+    </View>
+  );
+}
+
+function botonCopiar(sms: SmsVista): ReactNode {
+  if (!sms.puedeCopiar) {
+    return null;
+  }
+  return (
+    <Boton
+      texto="Copiar mensaje"
+      etiquetaAccesible="Copiar mensaje de alerta"
+      pistaAccesible="Copia el texto para que puedas pegarlo en otra aplicación."
+      onPress={() => {
+        void sms.copiarMensaje();
+      }}
+      variante="secundario"
+    />
+  );
+}
+
 const styles = StyleSheet.create({
   bloque: {
     gap: 12,
+  },
+  vistaMensaje: {
+    borderColor: "#D0D5DD",
+    borderRadius: 8,
+    borderWidth: 1,
+    padding: 12,
   },
 });
